@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>automasterskaya</title>
     <link href="/static/style.css" rel="stylesheet">
-    <p>Пример теста</p>
 </head>
 <body>
+     <header>
+        <nav>
+            <ul>
+                <li><a href="/">Главная</a></li>
+                <li><a href="/clients">Клиенты</a></li>
+                <li><a href="/cars">Автомобили</a></li>
+                <li><a href="/contracts">Договоры</a></li>
+                <li><a href="/orders">Заказ-наряды</a></li>
+                <li><a href="/reports">Отчеты</a></li>
+            </ul>
+        </nav>
+    </header>
     
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>
