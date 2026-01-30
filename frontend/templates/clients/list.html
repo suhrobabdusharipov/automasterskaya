@@ -6,9 +6,26 @@
         <tr>
             <th>ID</th>
             <th>ФИО</th>
-            <th>Email</th>
             <th>Телефон</th>
+            <th>Email</th>
             <th>Адрес</th>
         </tr>
     </head>
+    <body>
+        {% for client in clients %}
+        <tr>
+            <td>{{ client.id }}</td>
+            <td>{{ client.full_name }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.email }}</td>
+            <td>{{ client.address or '-' }}</td>
+            <td>
+                <a href="/clients/{{ client.id }}">Просмотр</a>
+                <a href="/clients/{{ client.id }}/edit">Редактировать</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </body>
 </table>
+<a href="/clients/new">Добавить клиента</a>
+{% endblock %}
