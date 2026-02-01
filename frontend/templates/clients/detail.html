@@ -289,3 +289,29 @@
     </div>
 </div>
 
+<!-- Окно добавления заметки -->
+<div id="addNoteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Добавить заметку</h3>
+            <button class="close-btn" onclick="closeAddNoteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addNoteForm">
+                <div class="form-group">
+                    <label for="noteContent">Заметка</label>
+                    <textarea id="noteContent" rows="4" required placeholder="Введите текст заметки..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noteTags">Теги</label>
+                    <input type="text" id="noteTags" placeholder="важный, повторный, премиум">
+                </div>
+                <input type="hidden" id="clientId" value="{{ client.id }}">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeAddNoteModal()" class="btn btn-secondary">Отмена</button>
+            <button onclick="addNote()" class="btn btn-primary">Добавить</button>
+        </div>
+    </div>
+</div>
