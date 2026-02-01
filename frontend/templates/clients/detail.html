@@ -222,4 +222,43 @@
         {% endif %}
     </div>
     
-   
+    <!-- Вкладка Заметки -->
+    <div id="notes-tab" class="tab-content">
+        <div class="section-header">
+            <h2>Заметки по клиенту</h2>
+            <button onclick="showAddNoteModal()" class="btn btn-primary">
+                <span>Добавить заметку</span>
+            </button>
+        </div>
+        
+        <div id="notes-list" class="notes-list">
+            {% if notes %}
+                {% for note in notes %}
+                <div class="note-card">
+                    <div class="note-header">
+                        <div class="note-author">{{ note.author }}</div>
+                        <div class="note-date">{{ note.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                        <button onclick="deleteNote({{ note.id }})" class="note-delete" title="Удалить заметку">
+                            &times;
+                        </button>
+                    </div>
+                    <div class="note-content">{{ note.content }}</div>
+                    {% if note.tags %}
+                    <div class="note-tags">
+                        {% for tag in note.tags.split(',') %}
+                        <span class="tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>Нет заметок по клиенту</p>
+                <p class="text-muted">Добавьте заметки о взаимодействии с клиентом</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
