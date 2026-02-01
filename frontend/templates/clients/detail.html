@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="client-detail">
+    <div class="client-header">
+        <h1>Клиент: {{ client.full_name }}</h1>
+        
+        <div class="client-actions">
+            <a href="/clients" class="btn btn-secondary">
+                <span class="icon-back"></span>
+                <span>Назад к списку</span>
+            </a>
+            <a href="/clients/{{ client.id }}/edit" class="btn btn-primary">
+                <span>Редактировать</span>
+            </a>
+            <button onclick="showDeleteConfirmation({{ client.id }})" class="btn btn-danger">
+                <span>Удалить</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="client-info">
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>Контактная информация</h3>
+                <div class="info-item">
+                    <span class="label">Телефон:</span>
+                    <span class="value">{{ client.phone }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Email:</span>
+                    <a href="mailto:{{ client.email }}" class="value">{{ client.email }}</a>
+                </div>
+                {% if client.address %}
+                <div class="info-item">
+                    <span class="label">Адрес:</span>
+                    <span class="value">{{ client.address }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <span class="label">Дата регистрации:</span>
+                    <span class="value">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Не указана' }}</span>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3>Статистика</h3>
+                <div class="info-item">
+                    <span class="label">Автомобилей:</span>
+                    <span class="value">{{ cars|length }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Договоров:</span>
+                    <span class="value">{{ contracts|length }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Общая сумма договоров:</span>
+                    <span class="value">{{ "%.2f"|format(total_contract_amount) }} ₽</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Последний визит:</span>
+                    <span class="value">{{ last_visit.strftime('%d.%m.%Y %H:%M') if last_visit else 'Нет данных' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Вкладки -->
+    <div class="tabs">
+        <button class="tab-button active" data-tab="cars">Автомобили ({{ cars|length }})</button>
+        <button class="tab-button" data-tab="contracts">Договоры ({{ contracts|length }})</button>
+        <button class="tab-button" data-tab="notes">Заметки</button>
+    </div>
+    
+    <!-- Вкладка Автомобили -->
+    <div id="cars-tab" class="tab-content active">
+        <div class="section-header">
+            <h2>Автомобили клиента</h2>
+            <a href="/cars/new?client_id={{ client.id }}" class="btn btn-primary">
+                <span>Добавить автомобиль</span>
+            </a>
+        </div>
+        
+        {% if cars %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Марка</th>
+                        <th>Модель</th>
+                        <th>Год</th>
+                        <th>VIN</th>
+                        <th>Последнее ТО</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in cars %}
+                    <tr>
+                        <td>{{ car.brand }}</td>
+                        <td>{{ car.model }}</td>
+                        <td>{{ car.year }}</td>
+                        <td><code>{{ car.vin }}</code></td>
+                        <td>{{ car.last_service_date.strftime('%d.%m.%Y') if car.last_service_date else 'Нет данных' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/cars/{{ car.id }}" class="btn-small btn-view" title="Просмотр">
+                                    👁️
+                                </a>
+                                <a href="/cars/{{ car.id }}/edit" class="btn-small btn-edit" title="Редактировать">
+                                    ✏️
+                                </a>
+                                <a href="/contracts/new?car_id={{ car.id }}" class="btn-small btn-contract" title="Создать договор">
+                                    📝
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+       
