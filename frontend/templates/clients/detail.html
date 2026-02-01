@@ -262,3 +262,30 @@
     </div>
 </div>
 
+<!-- Окно удаления -->
+<div id="deleteModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Подтверждение удаления</h3>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Вы уверены, что хотите удалить клиента <strong>{{ client.full_name }}</strong>?</p>
+            <p class="text-danger">Это действие нельзя отменить. Будут также удалены все связанные автомобили и договоры.</p>
+            
+            <div class="warning-box">
+                <h4>Будет удалено:</h4>
+                <ul>
+                    <li>Клиент: {{ client.full_name }}</li>
+                    <li>Автомобилей: {{ cars|length }}</li>
+                    <li>Договоров: {{ contracts|length }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeDeleteModal()" class="btn btn-secondary">Отмена</button>
+            <button onclick="deleteClient({{ client.id }})" class="btn btn-danger">Удалить</button>
+        </div>
+    </div>
+</div>
+
