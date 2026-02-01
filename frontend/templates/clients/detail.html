@@ -84,7 +84,7 @@
         {% if cars %}
         <div class="table-container">
             <table class="data-table">
-                <thead>
+                <head>
                     <tr>
                         <th>Марка</th>
                         <th>Модель</th>
@@ -93,8 +93,8 @@
                         <th>Последнее ТО</th>
                         <th>Действия</th>
                     </tr>
-                </thead>
-                <tbody>
+                </head>
+                <body>
                     {% for car in cars %}
                     <tr>
                         <td>{{ car.brand }}</td>
@@ -117,7 +117,7 @@
                         </td>
                     </tr>
                     {% endfor %}
-                </tbody>
+                </body>
             </table>
         </div>
         {% else %}
@@ -142,7 +142,7 @@
         {% if contracts %}
         <div class="table-container">
             <table class="data-table">
-                <thead>
+                <head>
                     <tr>
                         <th>№</th>
                         <th>Дата</th>
@@ -151,8 +151,8 @@
                         <th>Статус</th>
                         <th>Действия</th>
                     </tr>
-                </thead>
-                <tbody>
+                </head>
+                <body>
                     {% for contract in contracts %}
                     <tr>
                         <td>{{ contract.id }}</td>
@@ -186,7 +186,7 @@
                         </td>
                     </tr>
                     {% endfor %}
-                </tbody>
+                </body>
             </table>
         </div>
         
