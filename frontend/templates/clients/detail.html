@@ -120,4 +120,74 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="empty-state">
+            <p>У клиента нет зарегистрированных автомобилей</p>
+            <a href="/cars/new?client_id={{ client.id }}" class="btn btn-primary">
+                <span>Добавить первый автомобиль</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Вкладка Договоры -->
+    <div id="contracts-tab" class="tab-content">
+        <div class="section-header">
+            <h2>Договоры клиента</h2>
+            <a href="/contracts/new?client_id={{ client.id }}" class="btn btn-primary">
+                <span>Создать договор</span>
+            </a>
+        </div>
+        
+        {% if contracts %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Дата</th>
+                        <th>Автомобиль</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contract in contracts %}
+                    <tr>
+                        <td>{{ contract.id }}</td>
+                        <td>{{ contract.date.strftime('%d.%m.%Y') }}</td>
+                        <td>
+                            {% if contract.car %}
+                                {{ contract.car.brand }} {{ contract.car.model }}
+                            {% else %}
+                                Не указан
+                            {% endif %}
+                        </td>
+                        <td>{{ "%.2f"|format(contract.total_amount) if contract.total_amount else '0.00' }} ₽</td>
+                        <td>
+                            <span class="status-badge status-{{ contract.status }}">
+                                {{ contract.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/contracts/{{ contract.id }}" class="btn-small btn-view" title="Просмотр">
+                                    👁️
+                                </a>
+                                <button onclick="contractsManager.downloadContract('pdf', {{ contract.id }})" 
+                                        class="btn-small btn-pdf" title="Скачать PDF">
+                                    📊
+                                </button>
+                                <a href="/contracts/{{ contract.id }}/edit" class="btn-small btn-edit" title="Редактировать">
+                                    ✏️
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
        
