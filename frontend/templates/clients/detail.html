@@ -190,4 +190,36 @@
             </table>
         </div>
         
-       
+        <!-- Сводная статистика по договорам -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h4>Всего договоров</h4>
+                <div class="summary-value">{{ contracts|length }}</div>
+            </div>
+            <div class="summary-card">
+                <h4>Общая сумма</h4>
+                <div class="summary-value">{{ "%.2f"|format(total_contract_amount) }} ₽</div>
+            </div>
+            <div class="summary-card">
+                <h4>Средний чек</h4>
+                <div class="summary-value">
+                    {% if contracts|length > 0 %}
+                        {{ "%.2f"|format(total_contract_amount / contracts|length) }} ₽
+                    {% else %}
+                        0.00 ₽
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div class="empty-state">
+            <p>У клиента нет договоров</p>
+            <a href="/contracts/new?client_id={{ client.id }}" class="btn btn-primary">
+                <span>Создать первый договор</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+   
