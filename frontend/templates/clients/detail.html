@@ -1,317 +1,73 @@
 {% extends "base.html" %}
 
+{% block head %}
+<link rel="stylesheet" href="/static/css/detail.css">
+{% endblock %}
+
 {% block content %}
-<div class="client-detail">
-    <div class="client-header">
+<div class="container">
+    <div class="page-header">
         <h1>Клиент: {{ client.full_name }}</h1>
-        
-        <div class="client-actions">
-            <a href="/clients" class="btn btn-secondary">
-                <span class="icon-back"></span>
-                <span>Назад к списку</span>
-            </a>
+        <div class="header-actions">
             <a href="/clients/{{ client.id }}/edit" class="btn btn-primary">
                 <span>Редактировать</span>
             </a>
-            <button onclick="showDeleteConfirmation({{ client.id }})" class="btn btn-danger">
-                <span>Удалить</span>
-            </button>
-        </div>
-    </div>
-    
-    <div class="client-info">
-        <div class="info-grid">
-            <div class="info-card">
-                <h3>Контактная информация</h3>
-                <div class="info-item">
-                    <span class="label">Телефон:</span>
-                    <span class="value">{{ client.phone }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Email:</span>
-                    <a href="mailto:{{ client.email }}" class="value">{{ client.email }}</a>
-                </div>
-                {% if client.address %}
-                <div class="info-item">
-                    <span class="label">Адрес:</span>
-                    <span class="value">{{ client.address }}</span>
-                </div>
-                {% endif %}
-                <div class="info-item">
-                    <span class="label">Дата регистрации:</span>
-                    <span class="value">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Не указана' }}</span>
-                </div>
-            </div>
-            
-            <div class="info-card">
-                <h3>Статистика</h3>
-                <div class="info-item">
-                    <span class="label">Автомобилей:</span>
-                    <span class="value">{{ cars|length }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Договоров:</span>
-                    <span class="value">{{ contracts|length }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Общая сумма договоров:</span>
-                    <span class="value">{{ "%.2f"|format(total_contract_amount) }} ₽</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Последний визит:</span>
-                    <span class="value">{{ last_visit.strftime('%d.%m.%Y %H:%M') if last_visit else 'Нет данных' }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Вкладки -->
-    <div class="tabs">
-        <button class="tab-button active" data-tab="cars">Автомобили ({{ cars|length }})</button>
-        <button class="tab-button" data-tab="contracts">Договоры ({{ contracts|length }})</button>
-        <button class="tab-button" data-tab="notes">Заметки</button>
-    </div>
-    
-    <!-- Вкладка Автомобили -->
-    <div id="cars-tab" class="tab-content active">
-        <div class="section-header">
-            <h2>Автомобили клиента</h2>
-            <a href="/cars/new?client_id={{ client.id }}" class="btn btn-primary">
-                <span>Добавить автомобиль</span>
+            <a href="/clients" class="btn">
+                <span>Назад к списку</span>
             </a>
         </div>
-        
-        {% if cars %}
-        <div class="table-container">
-            <table class="data-table">
-                <head>
-                    <tr>
-                        <th>Марка</th>
-                        <th>Модель</th>
-                        <th>Год</th>
-                        <th>VIN</th>
-                        <th>Последнее ТО</th>
-                        <th>Действия</th>
-                    </tr>
-                </head>
-                <body>
-                    {% for car in cars %}
-                    <tr>
-                        <td>{{ car.brand }}</td>
-                        <td>{{ car.model }}</td>
-                        <td>{{ car.year }}</td>
-                        <td><code>{{ car.vin }}</code></td>
-                        <td>{{ car.last_service_date.strftime('%d.%m.%Y') if car.last_service_date else 'Нет данных' }}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="/cars/{{ car.id }}" class="btn-small btn-view" title="Просмотр">
-                                    👁️
-                                </a>
-                                <a href="/cars/{{ car.id }}/edit" class="btn-small btn-edit" title="Редактировать">
-                                    ✏️
-                                </a>
-                                <a href="/contracts/new?car_id={{ car.id }}" class="btn-small btn-contract" title="Создать договор">
-                                    📝
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </body>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <p>У клиента нет зарегистрированных автомобилей</p>
-            <a href="/cars/new?client_id={{ client.id }}" class="btn btn-primary">
-                <span>Добавить первый автомобиль</span>
-            </a>
-        </div>
-        {% endif %}
     </div>
     
-    <!-- Вкладка Договоры -->
-    <div id="contracts-tab" class="tab-content">
-        <div class="section-header">
-            <h2>Договоры клиента</h2>
-            <a href="/contracts/new?client_id={{ client.id }}" class="btn btn-primary">
-                <span>Создать договор</span>
-            </a>
-        </div>
-        
-        {% if contracts %}
-        <div class="table-container">
-            <table class="data-table">
-                <head>
-                    <tr>
-                        <th>№</th>
-                        <th>Дата</th>
-                        <th>Автомобиль</th>
-                        <th>Сумма</th>
-                        <th>Статус</th>
-                        <th>Действия</th>
-                    </tr>
-                </head>
-                <body>
-                    {% for contract in contracts %}
-                    <tr>
-                        <td>{{ contract.id }}</td>
-                        <td>{{ contract.date.strftime('%d.%m.%Y') }}</td>
-                        <td>
-                            {% if contract.car %}
-                                {{ contract.car.brand }} {{ contract.car.model }}
-                            {% else %}
-                                Не указан
-                            {% endif %}
-                        </td>
-                        <td>{{ "%.2f"|format(contract.total_amount) if contract.total_amount else '0.00' }} ₽</td>
-                        <td>
-                            <span class="status-badge status-{{ contract.status }}">
-                                {{ contract.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="/contracts/{{ contract.id }}" class="btn-small btn-view" title="Просмотр">
-                                    👁️
-                                </a>
-                                <button onclick="contractsManager.downloadContract('pdf', {{ contract.id }})" 
-                                        class="btn-small btn-pdf" title="Скачать PDF">
-                                    📊
-                                </button>
-                                <a href="/contracts/{{ contract.id }}/edit" class="btn-small btn-edit" title="Редактировать">
-                                    ✏️
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </body>
-            </table>
-        </div>
-        
-        <!-- Сводная статистика по договорам -->
-        <div class="summary-cards">
-            <div class="summary-card">
-                <h4>Всего договоров</h4>
-                <div class="summary-value">{{ contracts|length }}</div>
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h3>Основная информация</h3>
+            <div class="detail-item">
+                <span class="label">ID:</span>
+                <span class="value">{{ client.id }}</span>
             </div>
-            <div class="summary-card">
-                <h4>Общая сумма</h4>
-                <div class="summary-value">{{ "%.2f"|format(total_contract_amount) }} ₽</div>
+            <div class="detail-item">
+                <span class="label">ФИО:</span>
+                <span class="value">{{ client.full_name }}</span>
             </div>
-            <div class="summary-card">
-                <h4>Средний чек</h4>
-                <div class="summary-value">
-                    {% if contracts|length > 0 %}
-                        {{ "%.2f"|format(total_contract_amount / contracts|length) }} ₽
-                    {% else %}
-                        0.00 ₽
-                    {% endif %}
-                </div>
+            <div class="detail-item">
+                <span class="label">Телефон:</span>
+                <span class="value">{{ client.phone }}</span>
             </div>
-        </div>
-        
-        {% else %}
-        <div class="empty-state">
-            <p>У клиента нет договоров</p>
-            <a href="/contracts/new?client_id={{ client.id }}" class="btn btn-primary">
-                <span>Создать первый договор</span>
-            </a>
-        </div>
-        {% endif %}
-    </div>
-    
-    <!-- Вкладка Заметки -->
-    <div id="notes-tab" class="tab-content">
-        <div class="section-header">
-            <h2>Заметки по клиенту</h2>
-            <button onclick="showAddNoteModal()" class="btn btn-primary">
-                <span>Добавить заметку</span>
-            </button>
-        </div>
-        
-        <div id="notes-list" class="notes-list">
-            {% if notes %}
-                {% for note in notes %}
-                <div class="note-card">
-                    <div class="note-header">
-                        <div class="note-author">{{ note.author }}</div>
-                        <div class="note-date">{{ note.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
-                        <button onclick="deleteNote({{ note.id }})" class="note-delete" title="Удалить заметку">
-                            &times;
-                        </button>
-                    </div>
-                    <div class="note-content">{{ note.content }}</div>
-                    {% if note.tags %}
-                    <div class="note-tags">
-                        {% for tag in note.tags.split(',') %}
-                        <span class="tag">{{ tag.strip() }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-            <div class="empty-state">
-                <p>Нет заметок по клиенту</p>
-                <p class="text-muted">Добавьте заметки о взаимодействии с клиентом</p>
+            <div class="detail-item">
+                <span class="label">Email:</span>
+                <span class="value">{{ client.email }}</span>
+            </div>
+            {% if client.address %}
+            <div class="detail-item">
+                <span class="label">Адрес:</span>
+                <span class="value">{{ client.address }}</span>
             </div>
             {% endif %}
         </div>
-    </div>
-</div>
-
-<!-- Окно удаления -->
-<div id="deleteModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Подтверждение удаления</h3>
-            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p>Вы уверены, что хотите удалить клиента <strong>{{ client.full_name }}</strong>?</p>
-            <p class="text-danger">Это действие нельзя отменить. Будут также удалены все связанные автомобили и договоры.</p>
-            
-            <div class="warning-box">
-                <h4>Будет удалено:</h4>
-                <ul>
-                    <li>Клиент: {{ client.full_name }}</li>
-                    <li>Автомобилей: {{ cars|length }}</li>
-                    <li>Договоров: {{ contracts|length }}</li>
-                </ul>
+        
+        <div class="detail-card">
+            <h3>Автомобили клиента</h3>
+            {% if client.cars %}
+            <div class="related-list">
+                {% for car in client.cars %}
+                <div class="related-item">
+                    <strong>{{ car.brand }} {{ car.model }} ({{ car.year }})</strong>
+                    <div>VIN: {{ car.vin }}</div>
+                    <div class="item-actions">
+                        <a href="/cars/{{ car.id }}" class="btn-tiny">Просмотр</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-data">Нет автомобилей</p>
+            {% endif %}
+            <div class="card-actions">
+                <a href="/cars/new?client_id={{ client.id }}" class="btn-small">
+                    <span>Добавить автомобиль</span>
+                </a>
             </div>
         </div>
-        <div class="modal-footer">
-            <button onclick="closeDeleteModal()" class="btn btn-secondary">Отмена</button>
-            <button onclick="deleteClient({{ client.id }})" class="btn btn-danger">Удалить</button>
-        </div>
     </div>
 </div>
-
-<!-- Окно добавления заметки -->
-<div id="addNoteModal" class="modal" style="display: none;">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Добавить заметку</h3>
-            <button class="close-btn" onclick="closeAddNoteModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="addNoteForm">
-                <div class="form-group">
-                    <label for="noteContent">Заметка</label>
-                    <textarea id="noteContent" rows="4" required placeholder="Введите текст заметки..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="noteTags">Теги</label>
-                    <input type="text" id="noteTags" placeholder="важный, повторный, премиум">
-                </div>
-                <input type="hidden" id="clientId" value="{{ client.id }}">
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button onclick="closeAddNoteModal()" class="btn btn-secondary">Отмена</button>
-            <button onclick="addNote()" class="btn btn-primary">Добавить</button>
-        </div>
-    </div>
-</div>
+{% endblock %}
