@@ -1,25 +1,17 @@
 {% extends "base.html" %}
 
-{% block head %}
-<link rel="stylesheet" href="/static/css/detail.css">
-<link rel="stylesheet" href="/static/css/orders.css">
-{% endblock %}
-
 {% block content %}
 <div class="container">
     <div class="page-header">
         <h1>Заказ-наряд №{{ order.id }}</h1>
         <div class="header-actions">
             <a href="/orders/{{ order.id }}/edit" class="btn btn-primary">
-                <span>✏️</span>
                 <span>Редактировать</span>
             </a>
             <button onclick="downloadOrderReport({{ order.id }})" class="btn btn-secondary">
-                <span>📋</span>
                 <span>Скачать акт</span>
             </button>
             <a href="/orders" class="btn">
-                <span>←</span>
                 <span>Назад к списку</span>
             </a>
         </div>
