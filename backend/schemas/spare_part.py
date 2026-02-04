@@ -10,6 +10,10 @@ class SparePartBase(BaseModel):
 class SparePartCreate(SparePartBase):
     pass
 
+class SparePartUpdate(BaseModel):
+    name: str | None = None
+    price: float | None = None  
+    quantity: int | None = None
 
 class SparePartResponse(SparePartBase):
     id: int

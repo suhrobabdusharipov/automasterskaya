@@ -13,6 +13,12 @@ class ContractBase(BaseModel):
 class ContractCreate(ContractBase):
     pass
 
+class ContractUpdate(BaseModel):
+    client_id: int | None = None
+    car_id: int | None = None
+    date: date  
+    status: str | None = None
+    total_amount: float | None = None   
 
 class ContractResponse(ContractBase):
     id: int

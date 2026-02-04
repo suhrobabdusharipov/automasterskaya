@@ -12,6 +12,11 @@ class CarBase(BaseModel):
 class CarCreate(CarBase):
     pass
 
+class CarUpdate(BaseModel):
+    brand: str | None = None
+    model: str | None = None
+    year: int | None = None
+    vin: str | None = None
 
 class CarResponse(CarBase):
     id: int

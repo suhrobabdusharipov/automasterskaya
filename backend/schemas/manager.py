@@ -9,6 +9,9 @@ class ManagerBase(BaseModel):
 class ManagerCreate(ManagerBase):
     pass
 
+class ManagerUpdate(BaseModel):
+    full_name: str | None = None
+    contacts: str | None = None
 
 class ManagerResponse(ManagerBase):
     id: int

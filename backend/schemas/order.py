@@ -12,7 +12,12 @@ class OrderBase(BaseModel):
 class OrderCreate(OrderBase):
     pass
 
-
+class OrderUpdate(BaseModel):
+    contract_id: int | None = None
+    date: date  
+    services_description: str | None = None
+    total_cost: float | None = None
+    
 class OrderResponse(OrderBase):
     id: int
 

@@ -9,6 +9,9 @@ class MasterBase(BaseModel):
 class MasterCreate(MasterBase):
     pass
 
+class MasterUpdate(BaseModel):
+    full_name: str | None = None
+    specialization: str | None = None
 
 class MasterResponse(MasterBase):
     id: int

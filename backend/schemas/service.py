@@ -9,7 +9,10 @@ class ServiceBase(BaseModel):
 class ServiceCreate(ServiceBase):
     pass
 
-
+class ServiceUpdate(BaseModel):
+    name: str | None = None
+    price: float | None = None  
+    
 class ServiceResponse(ServiceBase):
     id: int
 
