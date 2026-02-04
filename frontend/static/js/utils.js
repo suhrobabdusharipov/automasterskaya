@@ -1,5 +1,3 @@
-// Утилитарные функции
-
 // Уведомления
 function showNotification(message, type = 'info', duration = 5000) {
     // Удаляем старые уведомления
