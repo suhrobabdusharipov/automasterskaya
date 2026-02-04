@@ -1,16 +1,10 @@
 {% extends "base.html" %}
-
-{% block head %}
-<link rel="stylesheet" href="/static/css/reports.css">
-<link rel="stylesheet" href="/static/css/forms.css">
-{% endblock %}
-
 {% block content %}
 <div class="container">
     <div class="page-header">
         <h1>Отчет по заказам</h1>
     </div>
-    
+
     <div class="form-container">
         <form id="reportForm">
             <div class="form-section">
@@ -55,12 +49,10 @@
             
             <div class="form-actions">
                 <button type="button" onclick="generateReport()" class="btn btn-primary">
-                    <span>📊</span>
                     <span>Сгенерировать отчет</span>
                 </button>
                 <button type="button" onclick="downloadReport()" class="btn btn-secondary">
-                    <span>📥</span>
-                    <span>Скачать отчет (PDF)</span>
+                    <span>Скачать отчет(PDF)</span>
                 </button>
             </div>
         </form>
