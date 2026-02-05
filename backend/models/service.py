@@ -1,6 +1,6 @@
 from sqlalchemy import String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from backend.database import Base
 
 
 class Service(Base):

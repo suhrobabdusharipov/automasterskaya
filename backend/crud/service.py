@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.service import Service
-from schemas.service import ServiceCreate, ServiceUpdate
+from backend.models.service import Service
+from backend.schemas.service import ServiceCreate, ServiceUpdate
 
 
 def get_service(db: Session, service_id: int):
