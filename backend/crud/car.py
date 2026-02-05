@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.car import Car
-from schemas.car import CarCreate, CarUpdate
+from backend.models.car import Car
+from backend.schemas.car import CarCreate, CarUpdate
 
 
 def get_car(db: Session, car_id: int):
