@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.contract import Contract
-from schemas.contract import ContractCreate, ContractUpdate
+from backend.models.contract import Contract
+from backend.schemas.contract import ContractCreate, ContractUpdate
 
 
 def get_contract(db: Session, contract_id: int):

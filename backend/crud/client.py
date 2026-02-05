@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.client import Client
-from schemas.client import ClientCreate, ClientUpdate
+from backend.models.client import Client
+from backend.schemas.client import ClientCreate, ClientUpdate
 
 
 def get_client(db: Session, client_id: int):
