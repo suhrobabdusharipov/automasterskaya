@@ -1,6 +1,6 @@
 from sqlalchemy import Date, ForeignKey, String, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from database import Base
+from backend.database import Base
 
 
 class Contract(Base):

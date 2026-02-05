@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import get_db
-from crud.contract import (
+from backend.database import get_db
+from backend.crud.contract import (
     get_contract,
     get_contracts,
     create_contract,
     update_contract,
     delete_contract,
 )
-from schemas.contract import ContractCreate, ContractUpdate
+from backend.schemas.contract import ContractCreate, ContractUpdate
 
 router = APIRouter(prefix="/contracts", tags=["Contracts"])
 
