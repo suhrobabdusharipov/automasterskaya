@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import get_db
-from crud.manager import (
+from backend.database import get_db
+from backend.crud.manager import (
     get_manager,
     get_managers,
     create_manager,
     update_manager,
     delete_manager,
 )
-from schemas.manager import ManagerCreate, ManagerUpdate
+from backend.schemas.manager import ManagerCreate, ManagerUpdate
 
 router = APIRouter(prefix="/managers", tags=["Managers"])
 

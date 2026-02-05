@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.manager import Manager
-from schemas.manager import ManagerCreate, ManagerUpdate
+from backend.models.manager import Manager
+from backend.schemas.manager import ManagerCreate, ManagerUpdate
 
 
 def get_manager(db: Session, manager_id: int):
