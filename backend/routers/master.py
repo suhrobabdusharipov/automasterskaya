@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import get_db
-from crud.master import (
+from backend.database import get_db
+from backend.crud.master import (
     get_master,
     get_masters,
     create_master,
     update_master,
     delete_master,
 )
-from schemas.master import MasterCreate, MasterUpdate
+from backend.schemas.master import MasterCreate, MasterUpdate
 
 router = APIRouter(prefix="/masters", tags=["Masters"])
 

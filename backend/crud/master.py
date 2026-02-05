@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.master import Master
-from schemas.master import MasterCreate, MasterUpdate
+from backend.models.master import Master
+from backend.schemas.master import MasterCreate, MasterUpdate
 
 
 def get_master(db: Session, master_id: int):
