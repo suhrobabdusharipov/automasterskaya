@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Статистика</h1>
+        <div class="header-actions">
+            <button onclick="exportToCSV()" class="btn btn-secondary">
+                <span>📊</span>
+                <span>Экспорт в CSV</span>
+            </button>
+            <button onclick="window.print()" class="btn">
+                <span>🖨️</span>
+                <span>Печать</span>
+            </button>
+        </div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Общая статистика</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Всего заказов</h3>
+                <p class="stat-number">{{ stats.total_orders }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Общая выручка</h3>
+                <p class="stat-number">{{ "%.2f"|format(stats.total_revenue) }} ₽</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Заказы по месяцам</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Месяц</th>
+                        <th>Количество заказов</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for month, count in stats.orders_by_month.items() %}
+                    <tr>
+                        <td>{{ month }}</td>
+                        <td>{{ count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Популярные услуги</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Услуга</th>
+                        <th>Количество использований</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in stats.popular_services %}
+                    <tr>
+                        <td>{{ service.name }}</td>
+                        <td>{{ service.count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Запчасти с низким остатком</h2>
+        {% if stats.stock_alert %}
+        <div class="alert-table-container">
+            <table class="alert-table">
+                <thead>
+                    <tr>
+                        <th>Запчасть</th>
+                        <th>Остаток</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in stats.stock_alert %}
+                    <tr class="alert-row">
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.stock }} шт.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-data">Нет запчастей с низким остатком</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function exportToCSV() {
+    try {
+        const response = await fetch('/api/v1/reports/statistics');
+        const stats = await response.json();
+        
+        let csv = 'Статистика автомастерской,' + new Date().toLocaleDateString() + '\n\n';
+        csv += 'Общие показатели\n';
+        csv += 'Всего заказов,' + stats.total_orders + '\n';
+        csv += 'Общая выручка,' + stats.total_revenue.toFixed(2) + '\n\n';
+        
+        csv += 'Заказы по месяцам\n';
+        for (const [month, count] of Object.entries(stats.orders_by_month)) {
+            csv += 'Месяц ' + month + ',' + count + '\n';
+        }
+        csv += '\n';
+        
+        csv += 'Популярные услуги\n';
+        stats.popular_services.forEach(service => {
+            csv += service.name + ',' + service.count + '\n';
+        });
+        csv += '\n';
+        
+        csv += 'Запчасти с низким остатком\n';
+        stats.stock_alert.forEach(item => {
+            csv += item.name + ',' + item.stock + '\n';
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'statistics_' + new Date().toISOString().split('T')[0] + '.csv';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        window.utils.showNotification('Статистика экспортирована в CSV', 'success');
+        
+    } catch (error) {
+        console.error('Export error:', error);
+        window.utils.showNotification('Ошибка при экспорте', 'error');
+    }
+}
+</script>
+{% endblock %}
