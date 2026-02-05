@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.spare_part import SparePart
-from schemas.spare_part import SparePartCreate, SparePartUpdate
+from backend.models.spare_part import SparePart
+from backend.schemas.spare_part import SparePartCreate, SparePartUpdate
 
 
 def get_spare_part(db: Session, spare_part_id: int):

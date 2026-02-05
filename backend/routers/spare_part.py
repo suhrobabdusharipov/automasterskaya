@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from database import get_db
-from crud.spare_part import (
+from backend.database import get_db
+from backend.crud.spare_part import (
     get_spare_part,
     get_spare_parts,
     create_spare_part,
     update_spare_part,
     delete_spare_part,
 )
-from schemas.spare_part import SparePartCreate, SparePartUpdate
+from backend.schemas.spare_part import SparePartCreate, SparePartUpdate
 
 router = APIRouter(prefix="/spare_parts", tags=["Spare Parts"])
 
