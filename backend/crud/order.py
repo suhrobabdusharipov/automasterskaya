@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.order import Order
-from schemas.order import OrderCreate, OrderUpdate
+from backend.models.order import Order
+from backend.schemas.order import OrderCreate, OrderUpdate
 
 
 def get_order(db: Session, order_id: int):
