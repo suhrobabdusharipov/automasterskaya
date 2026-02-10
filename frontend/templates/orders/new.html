@@ -1,0 +1,627 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="/static/js/orders.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Создать заказ-наряд</h1>
+        <a href="/orders" class="btn btn-secondary">Назад к списку</a>
+    </div>
+
+    {% if request.query_params.get("error") %}
+    <div class="alert alert-danger">
+        {{ request.query_params.get("error_message", "Ошибка при создании заказ-наряда") }}
+    </div>
+    {% endif %}
+
+    <div class="form-container">
+        <form action="/orders/new" method="post">
+            <div class="form-section">
+                <h2>Основная информация</h2>
+                
+                <div class="form-group">
+                    <label>Договор *</label>
+                    <select name="contract_id" required id="contractSelect">
+                        <option value="">-- Выберите договор --</option>
+                        {% for contract in contracts %}
+                        <option value="{{ contract.id }}" 
+                                data-client="{{ contract.client.full_name if contract.client else '' }}"
+                                data-client-phone="{{ contract.client.phone if contract.client else '' }}"
+                                data-client-email="{{ contract.client.email if contract.client else '' }}"
+                                data-car="{{ contract.car.brand if contract.car else '' }} {{ contract.car.model if contract.car else '' }}"
+                                data-car-year="{{ contract.car.year if contract.car else '' }}"
+                                data-car-vin="{{ contract.car.vin if contract.car else '' }}">
+                            Договор №{{ contract.id }} - 
+                            {% if contract.client %}
+                                {{ contract.client.full_name }}
+                            {% else %}
+                                Клиент не указан
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="contractDetails" class="details-card hidden">
+                    <h3>Информация по договору</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Клиент:</span>
+                            <span id="contractClient" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Телефон:</span>
+                            <span id="contractClientPhone" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email:</span>
+                            <span id="contractClientEmail" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Автомобиль:</span>
+                            <span id="contractCar" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Год выпуска:</span>
+                            <span id="contractCarYear" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">VIN:</span>
+                            <span id="contractCarVin" class="detail-value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Дата заказ-наряда *</label>
+                    <input type="datetime-local" name="order_date" required id="orderDate">
+                </div>
+
+                <div class="form-group">
+                    <label>Описание работ *</label>
+                    <textarea name="description" rows="3" required placeholder="Опишите выполненные работы..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Услуги</h2>
+                <div class="section-actions">
+                    <button type="button" id="addServiceBtn" class="btn btn-outline">
+                        + Добавить услугу
+                    </button>
+                    <button type="button" id="loadServicesBtn" class="btn btn-outline" onclick="loadAvailableServices()">
+                        Выбрать из списка
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="servicesTable">
+                        <thead>
+                            <tr>
+                                <th>Наименование услуги *</th>
+                                <th>Количество</th>
+                                <th>Цена (₽) *</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="noServicesRow" class="empty-row">
+                                <td colspan="4">Нет добавленных услуг</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Запчасти</h2>
+                <div class="section-actions">
+                    <button type="button" id="addPartBtn" class="btn btn-outline">
+                        + Добавить запчасть
+                    </button>
+                    <button type="button" id="loadPartsBtn" class="btn btn-outline" onclick="loadAvailableParts()">
+                        Выбрать из каталога
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="partsTable">
+                        <thead>
+                            <tr>
+                                <th>Наименование запчасти *</th>
+                                <th>Количество *</th>
+                                <th>Цена за единицу (₽) *</th>
+                                <th>Наличие</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="noPartsRow" class="empty-row">
+                                <td colspan="5">Нет добавленных запчастей</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="summary-section">
+                <h3>Итоговая сумма</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <span class="summary-label">Стоимость услуг:</span>
+                        <span id="servicesTotal" class="summary-value">0.00 ₽</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Стоимость запчастей:</span>
+                        <span id="partsTotal" class="summary-value">0.00 ₽</span>
+                    </div>
+                    <div class="summary-item total">
+                        <span class="summary-label">Итого по заказ-наряду:</span>
+                        <span id="totalAmount" class="summary-value">0.00 ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Дополнительно</h2>
+                
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="generate_act" name="generate_act" checked>
+                        <label for="generate_act">Создать акт выполненных работ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="notify_client" name="notify_client">
+                        <label for="notify_client">Уведомить клиента по email</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="update_stock" name="update_stock" checked>
+                        <label for="update_stock">Обновить остатки запчастей</label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Статус</label>
+                    <select name="status">
+                        <option value="draft" selected>Черновик</option>
+                        <option value="in_progress">В работе</option>
+                        <option value="completed">Выполнен</option>
+                        <option value="cancelled">Отменен</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Создать заказ-наряд</button>
+                <button type="button" onclick="previewOrder()" class="btn btn-info">Предпросмотр</button>
+                <a href="/orders" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Модальное окно выбора услуг -->
+<div id="servicesModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Выберите услуги</h2>
+            <button type="button" onclick="closeServicesModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-table-container">
+                <table id="availableServicesTable">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                            <th>Цена (₽)</th>
+                            <th>Описание</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availableServicesBody">
+                        <!-- Данные загружаются через JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closeServicesModal()" class="btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно выбора запчастей -->
+<div id="partsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Выберите запчасти</h2>
+            <button type="button" onclick="closePartsModal()" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="search-container">
+                <input type="text" id="partSearch" placeholder="Поиск по названию или артикулу..." 
+                       oninput="searchParts(this.value)">
+            </div>
+            <div class="modal-table-container">
+                <table id="availablePartsTable">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                            <th>Артикул</th>
+                            <th>Цена (₽)</th>
+                            <th>Наличие</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="availablePartsBody">
+                        <!-- Данные загружаются через JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="closePartsModal()" class="btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация даты и времени
+    const now = new Date();
+    const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+    
+    const dateInput = document.getElementById('orderDate');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = localDateTime;
+    }
+
+    // Инициализация обработчиков
+    initOrderForm();
+});
+
+function initOrderForm() {
+    const contractSelect = document.getElementById('contractSelect');
+    
+    if (contractSelect) {
+        contractSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            updateContractDetails(selectedOption);
+        });
+    }
+    
+    const addServiceBtn = document.getElementById('addServiceBtn');
+    const addPartBtn = document.getElementById('addPartBtn');
+    
+    if (addServiceBtn) {
+        addServiceBtn.addEventListener('click', addServiceRow);
+    }
+    
+    if (addPartBtn) {
+        addPartBtn.addEventListener('click', addPartRow);
+    }
+    
+    // Добавляем одну строку по умолчанию
+    addServiceRow();
+    addPartRow();
+}
+
+function updateContractDetails(option) {
+    const detailsCard = document.getElementById('contractDetails');
+    
+    if (!option || !option.value) {
+        detailsCard.classList.add('hidden');
+        return;
+    }
+    
+    const clientName = option.getAttribute('data-client');
+    const clientPhone = option.getAttribute('data-client-phone');
+    const clientEmail = option.getAttribute('data-client-email');
+    const carInfo = option.getAttribute('data-car');
+    const carYear = option.getAttribute('data-car-year');
+    const carVin = option.getAttribute('data-car-vin');
+    
+    document.getElementById('contractClient').textContent = clientName || '-';
+    document.getElementById('contractClientPhone').textContent = clientPhone || '-';
+    document.getElementById('contractClientEmail').textContent = clientEmail || '-';
+    document.getElementById('contractCar').textContent = carInfo || '-';
+    document.getElementById('contractCarYear').textContent = carYear || '-';
+    document.getElementById('contractCarVin').textContent = carVin || '-';
+    
+    detailsCard.classList.remove('hidden');
+}
+
+function addServiceRow(serviceData = null) {
+    const servicesTable = document.getElementById('servicesTable');
+    const tbody = servicesTable.querySelector('tbody');
+    const noServicesRow = document.getElementById('noServicesRow');
+    
+    if (noServicesRow) {
+        noServicesRow.remove();
+    }
+    
+    const rowCount = tbody.querySelectorAll('tr').length + 1;
+    
+    const row = document.createElement('tr');
+    
+    if (serviceData) {
+        // Добавление выбранной услуги из модального окна
+        row.innerHTML = `
+            <td>
+                <input type="text" name="service_name_${rowCount}" 
+                       value="${serviceData.name}" required readonly>
+            </td>
+            <td>
+                <input type="number" name="service_quantity_${rowCount}" 
+                       min="1" value="1" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <input type="number" name="service_price_${rowCount}" 
+                       step="0.01" min="0" value="${serviceData.price || 0}" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <button type="button" class="btn-small btn-danger" 
+                        onclick="removeRow(this)">Удалить</button>
+            </td>
+        `;
+    } else {
+        // Добавление пустой строки
+        row.innerHTML = `
+            <td>
+                <input type="text" name="service_name_${rowCount}" 
+                       placeholder="Наименование услуги" required>
+            </td>
+            <td>
+                <input type="number" name="service_quantity_${rowCount}" 
+                       min="1" value="1" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <input type="number" name="service_price_${rowCount}" 
+                       step="0.01" min="0" placeholder="0.00" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <button type="button" class="btn-small btn-danger" 
+                        onclick="removeRow(this)">Удалить</button>
+            </td>
+        `;
+    }
+    
+    tbody.appendChild(row);
+    calculateTotal();
+}
+
+function addPartRow(partData = null) {
+    const partsTable = document.getElementById('partsTable');
+    const tbody = partsTable.querySelector('tbody');
+    const noPartsRow = document.getElementById('noPartsRow');
+    
+    if (noPartsRow) {
+        noPartsRow.remove();
+    }
+    
+    const rowCount = tbody.querySelectorAll('tr').length + 1;
+    
+    const row = document.createElement('tr');
+    
+    if (partData) {
+        // Добавление выбранной запчасти из модального окна
+        row.innerHTML = `
+            <td>
+                <input type="text" name="part_name_${rowCount}" 
+                       value="${partData.name}" required readonly>
+            </td>
+            <td>
+                <input type="number" name="part_quantity_${rowCount}" 
+                       min="1" value="1" max="${partData.stock_quantity || 999}" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <input type="number" name="part_price_${rowCount}" 
+                       step="0.01" min="0" value="${partData.price || 0}" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <span class="stock-badge ${partData.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}">
+                    ${partData.stock_quantity || 0} шт.
+                </span>
+                <input type="hidden" name="part_stock_${rowCount}" value="${partData.stock_quantity || 0}">
+            </td>
+            <td>
+                <button type="button" class="btn-small btn-danger" 
+                        onclick="removeRow(this)">Удалить</button>
+            </td>
+        `;
+    } else {
+        // Добавление пустой строки
+        row.innerHTML = `
+            <td>
+                <input type="text" name="part_name_${rowCount}" 
+                       placeholder="Наименование запчасти" required>
+            </td>
+            <td>
+                <input type="number" name="part_quantity_${rowCount}" 
+                       min="1" value="1" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <input type="number" name="part_price_${rowCount}" 
+                       step="0.01" min="0" placeholder="0.00" required
+                       oninput="calculateTotal()">
+            </td>
+            <td>
+                <span class="stock-badge unknown">?</span>
+            </td>
+            <td>
+                <button type="button" class="btn-small btn-danger" 
+                        onclick="removeRow(this)">Удалить</button>
+            </td>
+        `;
+    }
+    
+    tbody.appendChild(row);
+    calculateTotal();
+}
+
+function removeRow(button) {
+    const row = button.closest('tr');
+    row.remove();
+    calculateTotal();
+    
+    // Проверяем, нужно ли показать сообщение "нет данных"
+    const table = row.closest('table');
+    const tbody = table.querySelector('tbody');
+    
+    if (table.id === 'servicesTable' && tbody.querySelectorAll('tr').length === 0) {
+        tbody.innerHTML = '<tr id="noServicesRow" class="empty-row"><td colspan="4">Нет добавленных услуг</td></tr>';
+    }
+    
+    if (table.id === 'partsTable' && tbody.querySelectorAll('tr').length === 0) {
+        tbody.innerHTML = '<tr id="noPartsRow" class="empty-row"><td colspan="5">Нет добавленных запчастей</td></tr>';
+    }
+}
+
+function calculateTotal() {
+    let servicesTotal = 0;
+    let partsTotal = 0;
+    
+    // Считаем услуги
+    const servicePriceInputs = document.querySelectorAll('input[name^="service_price_"]');
+    servicePriceInputs.forEach((input, index) => {
+        const price = parseFloat(input.value) || 0;
+        const quantityInputs = document.querySelectorAll('input[name^="service_quantity_"]');
+        const quantity = parseFloat(quantityInputs[index].value) || 1;
+        servicesTotal += price * quantity;
+    });
+    
+    // Считаем запчасти
+    const partPriceInputs = document.querySelectorAll('input[name^="part_price_"]');
+    partPriceInputs.forEach((input, index) => {
+        const price = parseFloat(input.value) || 0;
+        const quantityInputs = document.querySelectorAll('input[name^="part_quantity_"]');
+        const quantity = parseFloat(quantityInputs[index].value) || 1;
+        partsTotal += price * quantity;
+    });
+    
+    // Обновляем отображение
+    document.getElementById('servicesTotal').textContent = servicesTotal.toFixed(2) + ' ₽';
+    document.getElementById('partsTotal').textContent = partsTotal.toFixed(2) + ' ₽';
+    
+    const totalAmount = servicesTotal + partsTotal;
+    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2) + ' ₽';
+}
+
+async function loadAvailableServices() {
+    try {
+        const response = await fetch('/api/v1/services');
+        const services = await response.json();
+        
+        const modalBody = document.getElementById('availableServicesBody');
+        modalBody.innerHTML = '';
+        
+        services.forEach(service => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${service.name}</td>
+                <td>${service.price || 0} ₽</td>
+                <td>${service.description || ''}</td>
+                <td>
+                    <button type="button" class="btn-small btn-primary" 
+                            onclick="selectService(${JSON.stringify(service).replace(/"/g, '&quot;')})">
+                        Выбрать
+                    </button>
+                </td>
+            `;
+            modalBody.appendChild(row);
+        });
+        
+        document.getElementById('servicesModal').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading services:', error);
+        window.utils.showNotification('Ошибка загрузки услуг', 'error');
+    }
+}
+
+async function loadAvailableParts() {
+    try {
+        const response = await fetch('/api/v1/spare-parts');
+        const parts = await response.json();
+        
+        const modalBody = document.getElementById('availablePartsBody');
+        modalBody.innerHTML = '';
+        
+        parts.forEach(part => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${part.name}</td>
+                <td>${part.code || '—'}</td>
+                <td>${part.price || 0} ₽</td>
+                <td>
+                    <span class="stock-badge ${part.stock_quantity > 0 ? 'in-stock' : 'out-of-stock'}">
+                        ${part.stock_quantity || 0} шт.
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="btn-small btn-primary" 
+                            onclick="selectPart(${JSON.stringify(part).replace(/"/g, '&quot;')})"
+                            ${part.stock_quantity <= 0 ? 'disabled' : ''}>
+                        Выбрать
+                    </button>
+                </td>
+            `;
+            modalBody.appendChild(row);
+        });
+        
+        document.getElementById('partsModal').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading parts:', error);
+        window.utils.showNotification('Ошибка загрузки запчастей', 'error');
+    }
+}
+
+function searchParts(query) {
+    const rows = document.querySelectorAll('#availablePartsBody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query.toLowerCase())) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function selectService(service) {
+    addServiceRow(service);
+    closeServicesModal();
+}
+
+function selectPart(part) {
+    addPartRow(part);
+    closePartsModal();
+}
+
+function closeServicesModal() {
+    document.getElementById('servicesModal').style.display = 'none';
+}
+
+function closePartsModal() {
+    document.getElementById('partsModal').style.display = 'none';
+}
+
+function previewOrder() {
+    window.utils.showNotification('Функция предпросмотра в разработке', 'info');
+}
+</script>
+{% endblock %}
