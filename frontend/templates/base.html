@@ -3,154 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Автомастерская "АвтоСервис"{% endblock %}</title>
-    
-    <!-- Основные стили -->
-    <link rel="stylesheet" href="/static/style.css">
-    
-    <!-- Блок для дополнительных стилей страниц -->
-    {% block extra_css %}{% endblock %}
-    
-    <!-- Иконки -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Automasterskaya24</title>
+    <link href="/static/style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Шапка сайта -->
-    <header class="header">
-        <div class="container">
-            <nav class="navbar">
-                <!-- Логотип -->
-                <a href="/" class="logo">
-                    <i class="fas fa-car"></i>
-                    <span>АвтоСервис</span>
-                </a>
-                
-                <!-- Основное меню -->
-                <ul class="nav-menu">
-                    <li class="nav-item">
-                        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
-                            <i class="fas fa-home"></i>
-                            Главная
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/clients" class="nav-link {% if request.url.path.startswith('/clients') %}active{% endif %}">
-                            <i class="fas fa-users"></i>
-                            Клиенты
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/cars" class="nav-link {% if request.url.path.startswith('/cars') %}active{% endif %}">
-                            <i class="fas fa-car-side"></i>
-                            Автомобили
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/contracts" class="nav-link {% if request.url.path.startswith('/contracts') %}active{% endif %}">
-                            <i class="fas fa-file-contract"></i>
-                            Договоры
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/orders" class="nav-link {% if request.url.path.startswith('/orders') %}active{% endif %}">
-                            <i class="fas fa-tools"></i>
-                            Заказы
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/documents" class="nav-link {% if request.url.path.startswith('/documents') %}active{% endif %}">
-                            <i class="fas fa-file-alt"></i>
-                            Документы
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/reports" class="nav-link {% if request.url.path.startswith('/reports') %}active{% endif %}">
-                            <i class="fas fa-chart-bar"></i>
-                            Отчеты
-                        </a>
-                    </li>
-                </ul>
-                
-                <!-- Кнопка мобильного меню -->
-                <button class="nav-toggle" id="navToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </nav>
-        </div>
+     <header>
+        <nav>
+            <ul>
+                <li><a href="/">Главная</a></li>
+                <li><a href="/clients">Клиенты</a></li>
+                <li><a href="/cars">Автомобили</a></li>
+                <li><a href="/contracts">Договоры</a></li>
+                <li><a href="/orders">Заказ-наряды</a></li>
+                <li><a href="/reports">Отчеты</a></li>
+            </ul>
+        </nav>
     </header>
-
-    <!-- Основное содержимое -->
-    <main class="main">
-        <div class="container">
-            <!-- Блок для контента страницы -->
-            {% block content %}{% endblock %}
-        </div>
-    </main>
-
-    <!-- Подвал сайта -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Автомастерская "АвтоСервис"</h3>
-                    <p>Профессиональный ремонт и обслуживание автомобилей</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Контакты</h4>
-                    <p><i class="fas fa-map-marker-alt"></i> г. Москва, ул. Промышленная, д. 15</p>
-                    <p><i class="fas fa-phone"></i> +7 (495) 123-45-67</p>
-                    <p><i class="fas fa-envelope"></i> info@autoservice.ru</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Режим работы</h4>
-                    <p>Пн-Пт: 9:00-19:00</p>
-                    <p>Сб: 10:00-17:00</p>
-                    <p>Вс: выходной</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Автомастерская "АвтоСервис". Все права защищены.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Уведомления (будут добавляться динамически) -->
-    <div class="notifications-container" id="notificationsContainer"></div>
-
-    <!-- Основные скрипты -->
-    <script src="/static/js/utils.js"></script>
-    <script src="/static/js/main.js"></script>
-    
-    <!-- Блок для дополнительных скриптов страниц -->
-    {% block scripts %}{% endblock %}
-    
-    <!-- Инициализация приложения -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Инициализация мобильного меню
-            const navToggle = document.getElementById('navToggle');
-            const navMenu = document.querySelector('.nav-menu');
-            
-            if (navToggle) {
-                navToggle.addEventListener('click', function() {
-                    navMenu.classList.toggle('active');
-                });
-            }
-            
-            // Закрытие мобильного меню при клике на ссылку
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function() {
-                    navMenu.classList.remove('active');
-                });
-            });
-            
-            // Закрытие мобильного меню при клике вне его
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.nav-menu') && !event.target.closest('.nav-toggle')) {
-                    navMenu.classList.remove('active');
-                }
-            });
-        });
-    </script>
 </body>
 </html>
