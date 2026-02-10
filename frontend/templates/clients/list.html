@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="container">
     <div class="page-header">
@@ -7,7 +8,15 @@
             <span>Добавить клиента</span>
         </a>
     </div>
-    
+
+    {% if request.query_params.get("success") %}
+    <div class="alert alert-success">Клиент успешно добавлен!</div>
+    {% endif %}
+
+    {% if request.query_params.get("error") %}
+    <div class="alert alert-danger">Клиент с такой почтой или телефоном уже существует!</div>
+    {% endif %}
+
     <div class="table-container">
         <table>
             <thead>
@@ -26,18 +35,18 @@
                     <td>{{ client.id }}</td>
                     <td>{{ client.full_name }}</td>
                     <td>{{ client.phone }}</td>
-                    <td>{{ client.email }}</td>
+                    <td>{{ client.email or '-' }}</td>
                     <td>{{ client.address or '-' }}</td>
                     <td>
                         <div class="action-buttons">
-                            <a href="/clients/{{ client.id }}" class="btn-small btn-view">
-                                Просмотр
-                            </a>
-                            <a href="/clients/{{ client.id }}/edit" class="btn-small btn-edit">
-                                Редактировать
-                            </a>
+                            <a href="/clients/{{ client.id }}" class="btn-small btn-view">Просмотр</a>
+                            <a href="/clients/{{ client.id }}/edit" class="btn-small btn-edit">Редактировать</a>
                         </div>
                     </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center;">Клиенты не найдены</td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -7,8 +7,8 @@ class Client(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     full_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    phone_number: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=True)
     address: Mapped[str] = mapped_column(String(200), nullable=True)
 
     cars = relationship("Car", back_populates="client")
