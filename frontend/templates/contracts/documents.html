@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block head %}
+<script src="/static/js/contracts.js" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1>Генерация договора</h1>
+    
+    <form id="contractForm">
+        <div class="form-section">
+            <h3>Выбор договора</h3>
+            <div class="form-group">
+                <label for="contractSelect">Выберите договор:</label>
+                <select id="contractSelect" class="form-control" required>
+                    <option value="">-- Выберите договор --</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="contractDetails" class="contract-details">
+            <h3>Информация о договоре</h3>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Клиент:</span>
+                    <span id="clientName" class="detail-value">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Автомобиль:</span>
+                    <span id="carInfo" class="detail-value">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Дата:</span>
+                    <span id="contractDate" class="detail-value">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Сумма:</span>
+                    <span id="contractAmount" class="detail-value">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Статус:</span>
+                    <span id="contractStatus" class="detail-value">-</span>
+                </div>
+            </div>
+            
+            <div class="services-section">
+                <h4>Услуги:</h4>
+                <ul id="servicesList" class="services-list"></ul>
+            </div>
+            
+            <div class="parts-section">
+                <h4>Запчасти:</h4>
+                <ul id="partsList" class="parts-list"></ul>
+            </div>
+        </div>
+        
+        <div class="form-section document-options">
+            <h3>Параметры документа</h3>
+            
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeDetails" checked>
+                    <label for="includeDetails">Включить детали услуг и запчастей</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeSignatures" checked>
+                    <label for="includeSignatures">Включить поля для подписей</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="includeLogo" checked>
+                    <label for="includeLogo">Включить логотип компании</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-actions download-buttons">
+            <button type="button" onclick="generateDocument('docx')" class="btn btn-primary">
+                <span>📄</span>
+                <span>Скачать DOCX</span>
+            </button>
+            <button type="button" onclick="generateDocument('pdf')" class="btn btn-secondary">
+                <span>📊</span>
+                <span>Скачать PDF</span>
+            </button>
+            <button type="button" onclick="previewDocument()" class="btn btn-info">
+                <span>👁️</span>
+                <span>Предварительный просмотр</span>
+            </button>
+        </div>
+        
+        <div id="progressContainer" class="progress-container">
+            <div class="progress">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="progressText" class="progress-text">Подготовка документа...</div>
+        </div>
+    </form>
+    
+    <div id="previewContainer" class="preview-container">
+        <h3>Предварительный просмотр</h3>
+        <iframe id="previewFrame" class="preview-frame"></iframe>
+        <div class="preview-actions">
+            <button type="button" onclick="closePreview()" class="btn">Закрыть</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    initDocumentGenerator();
+});
+
+function generateDocument(format) {
+    const contractId = document.getElementById('contractSelect').value;
+    if (!contractId) {
+        if (window.utils) {
+            window.utils.showNotification('Выберите договор', 'error');
+        }
+        return;
+    }
+    
+    if (window.utils) {
+        window.utils.showProgress('Генерация документа...');
+    }
+    
+    const includeDetails = document.getElementById('includeDetails').checked;
+    const includeSignatures = document.getElementById('includeSignatures').checked;
+    const includeLogo = document.getElementById('includeLogo').checked;
+    
+    const params = new URLSearchParams({
+        include_details: includeDetails,
+        include_signatures: includeSignatures,
+        include_logo: includeLogo
+    });
+    
+    const url = `/api/v1/contract-documents/contract/${contractId}/download/${format}?${params}`;
+    
+    if (window.utils) {
+        window.utils.downloadFile(url);
+        
+        setTimeout(() => {
+            window.utils.hideProgress();
+            window.utils.showNotification('Документ успешно сгенерирован!', 'success');
+        }, 2000);
+    }
+}
+
+async function previewDocument() {
+    const contractId = document.getElementById('contractSelect').value;
+    if (!contractId) {
+        if (window.utils) {
+            window.utils.showNotification('Выберите договор', 'error');
+        }
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/v1/contract-documents/contract/${contractId}/preview`);
+        if (!response.ok) throw new Error('Ошибка загрузки предпросмотра');
+        
+        const html = await response.text();
+        const iframe = document.getElementById('previewFrame');
+        const container = document.getElementById('previewContainer');
+        
+        iframe.srcdoc = html;
+        container.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error previewing document:', error);
+        if (window.utils) {
+            window.utils.showNotification('Ошибка загрузки предпросмотра', 'error');
+        }
+    }
+}
+
+function closePreview() {
+    document.getElementById('previewContainer').style.display = 'none';
+    document.getElementById('previewFrame').srcdoc = '';
+}
+</script>
+{% endblock %}

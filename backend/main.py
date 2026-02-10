@@ -80,6 +80,13 @@ def order_detail_page(request: Request, order_id: int):
         {"request": request, "order_id": order_id}
     )
 
+@app.get("/reports")
+def reports_index(request: Request):
+    return templates.TemplateResponse(
+        "reports/orders.html",
+        {"request": request}
+    )
+
 @app.get("/reports/orders")
 def orders_report(request: Request):
     return templates.TemplateResponse(

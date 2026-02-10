@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>Автомастерская "АвтоСервис"</h1>
+    
+    <div class="stats-grid">
+        <div class="card">
+            <h3>Клиенты</h3>
+            <p class="stat-number" id="client-count">Загрузка...</p>
+        </div>
+        <div class="card">
+            <h3>Автомобили</h3>
+            <p class="stat-number" id="car-count">Загрузка...</p>
+        </div>
+        <div class="card">
+            <h3>Заказы</h3>
+            <p class="stat-number" id="order-count">Загрузка...</p>
+        </div>
+        <div class="card">
+            <h3>Выручка</h3>
+            <p class="stat-number" id="revenue">Загрузка...</p>
+        </div>
+    </div>
+    
+    <div class="quick-actions card">
+        <h2>Быстрые действия</h2>
+        <div class="actions-grid">
+            <a href="/clients/new" class="btn">
+                <span>Добавить клиента</span>
+            </a>
+            <a href="/cars/new" class="btn">
+                <span>Добавить автомобиль</span>
+            </a>
+            <a href="/contracts/new" class="btn">
+                <span>Создать договор</span>
+            </a>
+            <a href="/orders/new" class="btn">
+                <span>Новый заказ</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Загрузка статистики при загрузке страницы
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/api/v1/reports/statistics');
+        const data = await response.json();
+        
+        document.getElementById('order-count').textContent = data.total_orders;
+        document.getElementById('revenue').textContent = data.total_revenue.toFixed(2) + ' ₽';
+        
+        const clientsRes = await fetch('/api/v1/clients/');
+        const clients = await clientsRes.json();
+        document.getElementById('client-count').textContent = clients.length;
+        
+        const carsRes = await fetch('/api/v1/cars/');
+        const cars = await carsRes.json();
+        document.getElementById('car-count').textContent = cars.length;
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+});
+</script>
+{% endblock %}
