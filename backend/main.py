@@ -24,20 +24,6 @@ def index(request: Request):
         {"request": request}
     )
 
-@app.get("/clients")
-def clients_page(request: Request):
-    return templates.TemplateResponse(
-        "clients/list.html",
-        {"request": request}
-    )
-
-@app.get("/clients/{client_id}")
-def client_detail_page(request: Request, client_id: int):
-    return templates.TemplateResponse(
-        "clients/detail.html",
-        {"request": request, "client_id": client_id}
-    )
-
 @app.get("/cars")
 def cars_page(request: Request):
     return templates.TemplateResponse(
