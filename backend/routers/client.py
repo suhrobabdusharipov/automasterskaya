@@ -16,7 +16,7 @@ def clients_page(request: Request, db: Session = Depends(get_db)):
     clients = get_clients(db)
     return templates.TemplateResponse(
         "clients/list.html",
-        {"request": request, "clients": clients}
+        {"request": request, "clients": clients, "show_header": False}
     )
 
 @router.get("/new")

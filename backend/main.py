@@ -20,7 +20,7 @@ templates = Jinja2Templates(directory="frontend/templates")
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse(
-        "index.html",
+        "base.html",
         {"request": request}
     )
 

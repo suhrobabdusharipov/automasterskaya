@@ -7,14 +7,12 @@
         <a href="/clients" class="btn btn-secondary">Назад к списку</a>
     </div>
 
-    <!-- Сообщение об успешном добавлении -->
     {% if request.query_params.get("success") %}
     <div class="alert alert-success">
         Клиент успешно добавлен!
     </div>
     {% endif %}
 
-    <!-- Сообщение об ошибке уникальности -->
     {% if request.query_params.get("error") %}
     <div class="alert alert-danger">
         Клиент с такой почтой или телефоном уже существует!
