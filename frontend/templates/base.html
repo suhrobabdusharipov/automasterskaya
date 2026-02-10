@@ -2,27 +2,127 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Automasterskaya24</title>
-    <link href="/static/style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Automasterskaya-24{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    {% block head %}{% endblock %}
 </head>
 <body>
     {% if show_header|default(true) %}
-    <header>
-        <nav>
-            <ul>
-                <li><a href="/">Главная</a></li>
-                <li><a href="/clients">Клиенты</a></li>
-                <li><a href="/cars">Автомобили</a></li>
-                <li><a href="/contracts">Договоры</a></li>
-                <li><a href="/orders">Заказ-наряды</a></li>
-                <li><a href="/reports/orders">Отчеты</a></li>
-            </ul>
-        </nav>
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="/" class="logo">
+                    <i class="fas fa-car logo-icon"></i>
+                    <span>AUTOMASTERSKAYA-24</span>
+                </a>
+                
+                <button class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+                        <i class="fas fa-home"></i>
+                        <span>Главная</span>
+                    </a>
+                    <a href="/clients" class="nav-link {% if 'clients' in request.url.path %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Клиенты</span>
+                    </a>
+                    <a href="/cars" class="nav-link {% if 'cars' in request.url.path %}active{% endif %}">
+                        <i class="fas fa-car"></i>
+                        <span>Автомобили</span>
+                    </a>
+                    <a href="/contracts" class="nav-link {% if 'contracts' in request.url.path %}active{% endif %}">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Договоры</span>
+                    </a>
+                    <a href="/orders" class="nav-link {% if 'orders' in request.url.path %}active{% endif %}">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Заказ-наряды</span>
+                    </a>
+                    <a href="/reports/orders" class="nav-link {% if 'reports' in request.url.path %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Отчеты</span>
+                    </a>
+                </div>
+            </nav>
+        </div>
     </header>
     {% endif %}
 
-    <main>
-        {% block content %}{% endblock %}
+    <main class="main">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
     </main>
+
+    {% if show_footer|default(true) %}
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Автосервис</h3>
+                    <p>Мы занимаемся профессиональнальным обслуживанием и ремонтом автомобилей</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Навигация</h3>
+                    <div class="footer-links">
+                        <a href="/"><i class="fas fa-chevron-right"></i> Главная</a>
+                        <a href="/clients"><i class="fas fa-chevron-right"></i> Клиенты</a>
+                        <a href="/cars"><i class="fas fa-chevron-right"></i> Автомобили</a>
+                        <a href="/contracts"><i class="fas fa-chevron-right"></i> Договоры</a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Контакты</h3>
+                    <div class="footer-links">
+                        <a href="#"><i class="fas fa-map-marker-alt"></i> г. Красноярск, ул. Караульная, 47</a>
+                        <a href="tel:+79991234567"><i class="fas fa-phone"></i> +7 (999) 123-45-67</a>
+                        <a href="mailto:info@autoservice.ru"><i class="fas fa-envelope"></i> automasterskaya-24@mail.ru</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 Автосервис. Система управления.</p>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <script src="/static/js/main.js"></script>
+    <script>
+        // Мобильное меню
+        document.addEventListener('DOMContentLoaded', function() {
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            
+            if (navToggle && navMenu) {
+                navToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                    navToggle.querySelector('i').classList.toggle('fa-bars');
+                    navToggle.querySelector('i').classList.toggle('fa-times');
+                });
+                
+                // Закрытие меню при клике на ссылку
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth <= 768) {
+                            navMenu.classList.remove('active');
+                            if (navToggle.querySelector('i')) {
+                                navToggle.querySelector('i').classList.add('fa-bars');
+                                navToggle.querySelector('i').classList.remove('fa-times');
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>
