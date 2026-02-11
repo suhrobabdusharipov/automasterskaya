@@ -1,68 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="dashboard">
-    <h1>Automasterskaya</h1>
-    
-    <div class="stats-grid">
-        <div class="card">
-            <h3>Клиенты</h3>
-            <p class="stat-number" id="client-count">Загрузка...</p>
-        </div>
-        <div class="card">
-            <h3>Автомобили</h3>
-            <p class="stat-number" id="car-count">Загрузка...</p>
-        </div>
-        <div class="card">
-            <h3>Заказы</h3>
-            <p class="stat-number" id="order-count">Загрузка...</p>
-        </div>
-        <div class="card">
-            <h3>Выручка</h3>
-            <p class="stat-number" id="revenue">Загрузка...</p>
-        </div>
+<div class="container">
+    <div class="page-header">
+        <h1>Отчеты</h1>
     </div>
     
-    <div class="quick-actions card">
-        <h2>Быстрые действия</h2>
-        <div class="actions-grid">
-            <a href="/clients/new" class="btn">
-                <span>Добавить клиента</span>
-            </a>
-            <a href="/cars/new" class="btn">
-                <span>Добавить автомобиль</span>
-            </a>
-            <a href="/contracts/new" class="btn">
-                <span>Создать договор</span>
-            </a>
-            <a href="/orders/new" class="btn">
-                <span>Новый заказ</span>
-            </a>
+    <div class="reports-grid">
+        <div class="report-card">
+            <div class="report-icon">
+                📊
+            </div>
+            <div class="report-content">
+                <h3><a href="/reports/orders">Отчет по заказам</a></h3>
+                <p>Детальная информация о всех заказ-нарядах</p>
+            </div>
+        </div>
+        
+        <div class="report-card">
+            <div class="report-icon">
+                📈
+            </div>
+            <div class="report-content">
+                <h3><a href="/reports/statistics">Статистика</a></h3>
+                <p>Общая статистика по клиентам, автомобилям и заказам</p>
+            </div>
+        </div>
+        
+        <div class="report-card">
+            <div class="report-icon">
+                📄
+            </div>
+            <div class="report-content">
+                <h3><a href="/contracts/documents">Генерация документов</a></h3>
+                <p>Создание договоров и актов в различных форматах</p>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-// Загрузка статистики при загрузке страницы
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        const response = await fetch('/api/v1/reports/statistics');
-        const data = await response.json();
-        
-        document.getElementById('order-count').textContent = data.total_orders;
-        document.getElementById('revenue').textContent = data.total_revenue.toFixed(2) + ' ₽';
-        
-        const clientsRes = await fetch('/api/v1/clients/');
-        const clients = await clientsRes.json();
-        document.getElementById('client-count').textContent = clients.length;
-        
-        const carsRes = await fetch('/api/v1/cars/');
-        const cars = await carsRes.json();
-        document.getElementById('car-count').textContent = cars.length;
-        
-    } catch (error) {
-        console.error('Error loading stats:', error);
-    }
-});
-</script>
 {% endblock %}

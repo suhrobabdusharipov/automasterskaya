@@ -12,21 +12,12 @@
         <a href="/contracts/new" class="btn btn-primary">
             <span>Создать договор</span>
         </a>
-        <button onclick="downloadSelectedContracts()" class="btn btn-secondary" id="downloadSelectedBtn" disabled>
-            <span>Скачать выбранные</span>
-        </button>
-        <button onclick="downloadAllContracts()" class="btn btn-info">
-            <span>Скачать все (ZIP)</span>
-        </button>
     </div>
     
     <div class="table-container">
         <table id="contractsTable">
             <thead>
                 <tr>
-                    <th width="50">
-                        <input type="checkbox" id="selectAll">
-                    </th>
                     <th>ID</th>
                     <th>Клиент</th>
                     <th>Автомобиль</th>
@@ -37,92 +28,66 @@
                 </tr>
             </thead>
             <tbody>
-                {% for contract in contracts %}
-                <tr data-contract-id="{{ contract.id }}">
-                    <td>
-                        <input type="checkbox" class="contract-checkbox" value="{{ contract.id }}">
-                    </td>
-                    <td>{{ contract.id }}</td>
-                    <td>{{ contract.client.full_name if contract.client else 'Неизвестно' }}</td>
-                    <td>
-                        {% if contract.car %}
-                            {{ contract.car.brand }} {{ contract.car.model }} ({{ contract.car.year }})
-                        {% else %}
-                            Не указан
-                        {% endif %}
-                    </td>
-                    <td>{{ contract.date.strftime('%d.%m.%Y') if contract.date else '-' }}</td>
-                    <td>{{ "%.2f"|format(contract.total_amount) if contract.total_amount else '0.00' }} ₽</td>
-                    <td>
-                        <span class="status-badge status-{{ contract.status }}">
-                            {{ contract.status }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="/contracts/{{ contract.id }}" class="btn-small btn-view" title="Просмотр">
-                                👁️
-                            </a>
-                            <button onclick="downloadContract('docx', {{ contract.id }})" 
-                                    class="btn-small btn-docx" title="Скачать DOCX">
-                                📄
-                            </button>
-                            <button onclick="downloadContract('pdf', {{ contract.id }})" 
-                                    class="btn-small btn-pdf" title="Скачать PDF">
-                                📊
-                            </button>
-                            <button onclick="showQuickDownloadMenu({{ contract.id }}, this)" 
-                                    class="btn-small btn-more" title="Быстрое скачивание">
-                                ⬇️
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
+                {% if contracts %}
+                    {% for contract in contracts %}
+                    <tr data-contract-id="{{ contract.id }}">
+                        <td>{{ contract.id }}</td>
+                        <td>
+                            {% if contract.client %}
+                                {{ contract.client.full_name }}
+                            {% else %}
+                                Неизвестно
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if contract.car %}
+                                {{ contract.car.brand }} {{ contract.car.model }} ({{ contract.car.year }})
+                            {% else %}
+                                Не указан
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if contract.contract_date %}
+                                {{ contract.contract_date.strftime('%d.%m.%Y') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if contract.total_amount %}
+                                {{ "%.2f"|format(contract.total_amount) }} ₽
+                            {% else %}
+                                0.00 ₽
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if contract.status %}
+                                <span class="status-badge status-{{ contract.status }}">
+                                    {{ contract.status }}
+                                </span>
+                            {% else %}
+                                <span class="status-badge">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/contracts/{{ contract.id }}" class="btn-small btn-view" title="Просмотр">
+                                    👁️
+                                </a>
+                                <a href="/contracts/{{ contract.id }}/edit" class="btn-small btn-edit" title="Редактировать">
+                                    ✏️
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="no-data">Нет договоров</td>
+                    </tr>
+                {% endif %}
             </tbody>
         </table>
     </div>
 </div>
-
-<!-- Меню быстрого скачивания -->
-<div id="quickDownloadMenu" class="quick-download-menu">
-    <div class="menu-header">
-        <h3>Скачать договор</h3>
-        <button onclick="closeQuickDownloadMenu()" class="close-btn">&times;</button>
-    </div>
-    <div class="menu-content">
-        <div class="format-options">
-            <button onclick="downloadSelectedFormat('docx')" class="format-btn docx-btn">
-                <span class="format-icon">📄</span>
-                <span class="format-name">DOCX</span>
-                <span class="format-desc">Редактируемый Word документ</span>
-            </button>
-            <button onclick="downloadSelectedFormat('pdf')" class="format-btn pdf-btn">
-                <span class="format-icon">📊</span>
-                <span class="format-name">PDF</span>
-                <span class="format-desc">Для печати и отправки</span>
-            </button>
-        </div>
-        <div class="additional-options">
-            <label>
-                <input type="checkbox" id="includeAttachments" checked>
-                Включить приложения
-            </label>
-            <label>
-                <input type="checkbox" id="signaturePlaceholders" checked>
-                Места для подписей
-            </label>
-        </div>
-    </div>
-</div>
-
-<script>
-// Инициализация после загрузки страницы
-document.addEventListener('DOMContentLoaded', function() {
-    // Обновление кнопки при изменении чекбоксов
-    document.querySelectorAll('.contract-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', updateDownloadButton);
-    });
-});
-</script>
 {% endblock %}

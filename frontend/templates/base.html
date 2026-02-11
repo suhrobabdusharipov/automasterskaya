@@ -94,7 +94,13 @@
     </footer>
     {% endif %}
 
-    <script src="/static/js/main.js"></script>
+    <!-- 1. Сначала утилиты -->
+<script src="/static/js/utils.js"></script>
+<!-- 2. Потом основной скрипт -->
+<script src="/static/js/main.js"></script>
+<!-- 3. Потом специфичные скрипты -->
+<script src="/static/js/contracts.js"></script>
+<script src="/static/js/orders.js"></script>
     <script>
         // Мобильное меню
         document.addEventListener('DOMContentLoaded', function() {

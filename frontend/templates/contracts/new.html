@@ -1,19 +1,15 @@
 {% extends "base.html" %}
 
-{% block head %}
-<script src="/static/js/contracts.js" defer></script>
-{% endblock %}
-
 {% block content %}
 <div class="container">
     <div class="page-header">
-        <h1>Создать договор</h1>
+        <h1>Новый договор</h1>
         <a href="/contracts" class="btn btn-secondary">Назад к списку</a>
     </div>
 
     {% if request.query_params.get("error") %}
     <div class="alert alert-danger">
-        {{ request.query_params.get("error_message", "Ошибка при создании договора") }}
+        Ошибка: {{ request.query_params.get("error") }}
     </div>
     {% endif %}
 
@@ -24,7 +20,7 @@
                 
                 <div class="form-group">
                     <label>Клиент *</label>
-                    <select name="client_id" required id="clientSelect">
+                    <select name="client_id" required class="form-control">
                         <option value="">-- Выберите клиента --</option>
                         {% for client in clients %}
                         <option value="{{ client.id }}">{{ client.full_name }} ({{ client.phone }})</option>
@@ -33,412 +29,56 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Автомобиль</label>
-                    <select name="car_id" id="carSelect" disabled>
-                        <option value="">-- Сначала выберите клиента --</option>
+                    <label>Автомобиль *</label>
+                    <select name="car_id" required class="form-control">
+                        <option value="">-- Выберите автомобиль --</option>
+                        {% for car in cars %}
+                        <option value="{{ car.id }}">{{ car.brand }} {{ car.model }} ({{ car.year }}) - {{ car.vin }}</option>
+                        {% endfor %}
                     </select>
-                </div>
-
-                <div id="carDetails" class="details-card hidden">
-                    <h3>Информация об автомобиле</h3>
-                    <div class="details-grid">
-                        <div class="detail-item">
-                            <span class="detail-label">Марка:</span>
-                            <span id="carBrand" class="detail-value">-</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Модель:</span>
-                            <span id="carModel" class="detail-value">-</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Год выпуска:</span>
-                            <span id="carYear" class="detail-value">-</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">VIN:</span>
-                            <span id="carVin" class="detail-value">-</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="form-group">
                     <label>Дата договора *</label>
-                    <input type="date" name="contract_date" required value="{{ today }}">
+                    <input type="date" name="date" required class="form-control" value="{{ today }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Статус</label>
+                    <select name="status" class="form-control">
+                        <option value="draft" selected>Черновик</option>
+                        <option value="active">Активный</option>
+                        <option value="completed">Завершен</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Сумма договора</label>
+                    <input type="number" name="total_amount" step="0.01" min="0" value="0" class="form-control">
                 </div>
 
                 <div class="form-group">
                     <label>Описание</label>
-                    <textarea name="description" rows="3" placeholder="Дополнительная информация о договоре..."></textarea>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Услуги</h2>
-                <div class="section-actions">
-                    <button type="button" id="addServiceBtn" class="btn btn-outline">
-                        + Добавить услугу
-                    </button>
-                </div>
-                
-                <div class="table-container">
-                    <table id="servicesTable">
-                        <thead>
-                            <tr>
-                                <th>Наименование услуги</th>
-                                <th>Цена (₽)</th>
-                                <th>Описание</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="noServicesRow" class="empty-row">
-                                <td colspan="4">Нет добавленных услуг</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Запчасти</h2>
-                <div class="section-actions">
-                    <button type="button" id="addPartBtn" class="btn btn-outline">
-                        + Добавить запчасть
-                    </button>
-                </div>
-                
-                <div class="table-container">
-                    <table id="partsTable">
-                        <thead>
-                            <tr>
-                                <th>Наименование запчасти</th>
-                                <th>Количество</th>
-                                <th>Цена за единицу (₽)</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr id="noPartsRow" class="empty-row">
-                                <td colspan="4">Нет добавленных запчастей</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="summary-section">
-                <h3>Сумма договора</h3>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <span class="summary-label">Стоимость услуг:</span>
-                        <span id="servicesTotal" class="summary-value">0.00 ₽</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Стоимость запчастей:</span>
-                        <span id="partsTotal" class="summary-value">0.00 ₽</span>
-                    </div>
-                    <div class="summary-item total">
-                        <span class="summary-label">Итого:</span>
-                        <span id="totalAmount" class="summary-value">0.00 ₽</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-section">
-                <h2>Дополнительные параметры</h2>
-                
-                <div class="form-group">
-                    <label>Статус договора</label>
-                    <select name="status">
-                        <option value="draft" selected>Черновик</option>
-                        <option value="active">Активный</option>
-                        <option value="completed">Завершен</option>
-                        <option value="cancelled">Отменен</option>
-                    </select>
-                </div>
-
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="generate_pdf" name="generate_pdf" checked>
-                        <label for="generate_pdf">Создать PDF документ</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="send_email" name="send_email">
-                        <label for="send_email">Отправить на email клиента</label>
-                    </div>
+                    <textarea name="description" rows="3" class="form-control" placeholder="Описание работ..."></textarea>
                 </div>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Создать договор</button>
-                <button type="button" onclick="previewContract()" class="btn btn-info">Предпросмотр</button>
                 <a href="/contracts" class="btn btn-secondary">Отмена</a>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Модальное окно предпросмотра -->
-<div id="previewModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Предпросмотр договора</h2>
-            <button type="button" onclick="closePreview()" class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="previewContent">
-                <p>Загрузка предпросмотра...</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" onclick="closePreview()" class="btn">Закрыть</button>
-        </div>
-    </div>
-</div>
-
 <script>
+// Простой скрипт для подстановки сегодняшней даты
 document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация даты
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.querySelector('input[name="contract_date"]');
+    const dateInput = document.querySelector('input[name="date"]');
     if (dateInput && !dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
         dateInput.value = today;
     }
-
-    // Инициализация обработчиков
-    initContractForm();
 });
-
-function initContractForm() {
-    const clientSelect = document.getElementById('clientSelect');
-    const carSelect = document.getElementById('carSelect');
-    
-    if (clientSelect) {
-        clientSelect.addEventListener('change', function() {
-            const clientId = this.value;
-            updateCarSelect(clientId);
-        });
-    }
-    
-    const addServiceBtn = document.getElementById('addServiceBtn');
-    const addPartBtn = document.getElementById('addPartBtn');
-    
-    if (addServiceBtn) {
-        addServiceBtn.addEventListener('click', addServiceRow);
-    }
-    
-    if (addPartBtn) {
-        addPartBtn.addEventListener('click', addPartRow);
-    }
-    
-    // Добавляем одну строку по умолчанию для услуг и запчастей
-    addServiceRow();
-    addPartRow();
-}
-
-async function updateCarSelect(clientId) {
-    const carSelect = document.getElementById('carSelect');
-    const carDetails = document.getElementById('carDetails');
-    
-    if (!clientId) {
-        carSelect.innerHTML = '<option value="">-- Сначала выберите клиента --</option>';
-        carSelect.disabled = true;
-        carDetails.classList.add('hidden');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/v1/clients/${clientId}/cars`);
-        const cars = await response.json();
-        
-        carSelect.innerHTML = '<option value="">-- Выберите автомобиль --</option>';
-        
-        if (cars.length === 0) {
-            carSelect.innerHTML += '<option value="">У клиента нет автомобилей</option>';
-        } else {
-            cars.forEach(car => {
-                const option = document.createElement('option');
-                option.value = car.id;
-                option.textContent = `${car.brand} ${car.model} (${car.year})`;
-                carSelect.appendChild(option);
-            });
-        }
-        
-        carSelect.disabled = false;
-        carDetails.classList.add('hidden');
-        
-        // Добавляем обработчик изменения автомобиля
-        carSelect.addEventListener('change', function() {
-            updateCarDetails(this.value);
-        });
-        
-    } catch (error) {
-        console.error('Error loading cars:', error);
-    }
-}
-
-async function updateCarDetails(carId) {
-    const carDetails = document.getElementById('carDetails');
-    
-    if (!carId) {
-        carDetails.classList.add('hidden');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/v1/cars/${carId}`);
-        const car = await response.json();
-        
-        document.getElementById('carBrand').textContent = car.brand || '-';
-        document.getElementById('carModel').textContent = car.model || '-';
-        document.getElementById('carYear').textContent = car.year || '-';
-        document.getElementById('carVin').textContent = car.vin || '-';
-        
-        carDetails.classList.remove('hidden');
-        
-    } catch (error) {
-        console.error('Error loading car details:', error);
-    }
-}
-
-function addServiceRow() {
-    const servicesTable = document.getElementById('servicesTable');
-    const tbody = servicesTable.querySelector('tbody');
-    const noServicesRow = document.getElementById('noServicesRow');
-    
-    if (noServicesRow) {
-        noServicesRow.remove();
-    }
-    
-    const rowCount = tbody.querySelectorAll('tr').length + 1;
-    
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" name="service_name_${rowCount}" 
-                   placeholder="Наименование услуги" required>
-        </td>
-        <td>
-            <input type="number" name="service_price_${rowCount}" 
-                   step="0.01" min="0" placeholder="0.00" required
-                   oninput="calculateTotal()">
-        </td>
-        <td>
-            <input type="text" name="service_description_${rowCount}" 
-                   placeholder="Описание услуги">
-        </td>
-        <td>
-            <button type="button" class="btn-small btn-danger" 
-                    onclick="removeRow(this)">Удалить</button>
-        </td>
-    `;
-    
-    tbody.appendChild(row);
-    calculateTotal();
-}
-
-function addPartRow() {
-    const partsTable = document.getElementById('partsTable');
-    const tbody = partsTable.querySelector('tbody');
-    const noPartsRow = document.getElementById('noPartsRow');
-    
-    if (noPartsRow) {
-        noPartsRow.remove();
-    }
-    
-    const rowCount = tbody.querySelectorAll('tr').length + 1;
-    
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <input type="text" name="part_name_${rowCount}" 
-                   placeholder="Наименование запчасти" required>
-        </td>
-        <td>
-            <input type="number" name="part_quantity_${rowCount}" 
-                   min="1" value="1" required
-                   oninput="calculateTotal()">
-        </td>
-        <td>
-            <input type="number" name="part_price_${rowCount}" 
-                   step="0.01" min="0" placeholder="0.00" required
-                   oninput="calculateTotal()">
-        </td>
-        <td>
-            <button type="button" class="btn-small btn-danger" 
-                    onclick="removeRow(this)">Удалить</button>
-        </td>
-    `;
-    
-    tbody.appendChild(row);
-    calculateTotal();
-}
-
-function removeRow(button) {
-    const row = button.closest('tr');
-    row.remove();
-    calculateTotal();
-    
-    // Проверяем, нужно ли показать сообщение "нет данных"
-    const table = row.closest('table');
-    const tbody = table.querySelector('tbody');
-    
-    if (table.id === 'servicesTable' && tbody.querySelectorAll('tr').length === 0) {
-        tbody.innerHTML = '<tr id="noServicesRow" class="empty-row"><td colspan="4">Нет добавленных услуг</td></tr>';
-    }
-    
-    if (table.id === 'partsTable' && tbody.querySelectorAll('tr').length === 0) {
-        tbody.innerHTML = '<tr id="noPartsRow" class="empty-row"><td colspan="4">Нет добавленных запчастей</td></tr>';
-    }
-}
-
-function calculateTotal() {
-    let servicesTotal = 0;
-    let partsTotal = 0;
-    
-    // Считаем услуги
-    const servicePriceInputs = document.querySelectorAll('input[name^="service_price_"]');
-    servicePriceInputs.forEach(input => {
-        const price = parseFloat(input.value) || 0;
-        servicesTotal += price;
-    });
-    
-    // Считаем запчасти
-    const partPriceInputs = document.querySelectorAll('input[name^="part_price_"]');
-    partPriceInputs.forEach((input, index) => {
-        const price = parseFloat(input.value) || 0;
-        const quantityInputs = document.querySelectorAll('input[name^="part_quantity_"]');
-        const quantity = parseFloat(quantityInputs[index].value) || 1;
-        partsTotal += price * quantity;
-    });
-    
-    // Обновляем отображение
-    document.getElementById('servicesTotal').textContent = servicesTotal.toFixed(2) + ' ₽';
-    document.getElementById('partsTotal').textContent = partsTotal.toFixed(2) + ' ₽';
-    
-    const totalAmount = servicesTotal + partsTotal;
-    document.getElementById('totalAmount').textContent = totalAmount.toFixed(2) + ' ₽';
-}
-
-function previewContract() {
-    const modal = document.getElementById('previewModal');
-    const previewContent = document.getElementById('previewContent');
-    
-    // Здесь можно добавить AJAX запрос для получения предпросмотра
-    // const formData = new FormData(document.querySelector('form'));
-    
-    previewContent.innerHTML = `
-        <div class="preview-loading">
-            <p>Функция предпросмотра в разработке...</p>
-            <p>После создания договора вы сможете сгенерировать документы в различных форматах.</p>
-        </div>
-    `;
-    
-    modal.style.display = 'block';
-}
-
-function closePreview() {
-    document.getElementById('previewModal').style.display = 'none';
-}
 </script>
 {% endblock %}

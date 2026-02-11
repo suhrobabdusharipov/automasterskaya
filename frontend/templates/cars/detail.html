@@ -12,11 +12,17 @@
             <a href="/cars/{{ car.id }}/edit" class="btn btn-primary">
                 <span>Редактировать</span>
             </a>
-            <a href="/cars" class="btn">
+            <a href="/cars" class="btn btn-secondary">
                 <span>Назад к списку</span>
             </a>
         </div>
     </div>
+    
+    {% if request.query_params.get("success") %}
+    <div class="alert alert-success">
+        Автомобиль успешно создан!
+    </div>
+    {% endif %}
     
     <div class="detail-grid">
         <div class="detail-card">
@@ -59,32 +65,11 @@
                 </div>
                 <div class="detail-item">
                     <span class="label">Email:</span>
-                    <span class="value">{{ car.client.email }}</span>
+                    <span class="value">{{ car.client.email or 'Не указан' }}</span>
                 </div>
             </div>
             {% else %}
             <p class="no-data">Владелец не указан</p>
-            {% endif %}
-        </div>
-        
-        <div class="detail-card">
-            <h3>История обслуживания</h3>
-            {% if car.contracts %}
-            <div class="related-list">
-                {% for contract in car.contracts %}
-                <div class="related-item">
-                    <strong>Договор №{{ contract.id }}</strong>
-                    <div>Дата: {{ contract.date.strftime('%d.%m.%Y') if contract.date else '-' }}</div>
-                    <div>Статус: <span class="status-badge status-{{ contract.status }}">{{ contract.status }}</span></div>
-                    <div>Сумма: {{ "%.2f"|format(contract.total_amount) if contract.total_amount else '0.00' }} ₽</div>
-                    <div class="item-actions">
-                        <a href="/contracts/{{ contract.id }}" class="btn-tiny">Просмотр</a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="no-data">Нет договоров</p>
             {% endif %}
         </div>
     </div>
