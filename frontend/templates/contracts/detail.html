@@ -11,11 +11,11 @@
         
         <div class="contract-actions">
             <div class="download-buttons">
-                <button onclick="downloadContract('docx', {{ contract.id }})" class="btn btn-primary">
+                <button onclick="downloadContract('docx', '{{ contract.id }}')" class="btn btn-primary">
                     <span>📄</span>
                     <span>Скачать DOCX</span>
                 </button>
-                <button onclick="downloadContract('pdf', {{ contract.id }})" class="btn btn-secondary">
+                <button onclick="downloadContract('pdf', '{{ contract.id }}')" class="btn btn-secondary">
                     <span>📊</span>
                     <span>Скачать PDF</span>
                 </button>
@@ -162,13 +162,13 @@
     <div class="quick-download-section">
         <h3>Быстрое скачивание</h3>
         <div class="download-options">
-            <button onclick="downloadContract('docx', {{ contract.id }})" class="download-option">
+            <button onclick="downloadContract('docx', '{{ contract.id }}')" class="download-option">
                 <span class="option-icon">📄</span>
                 <span class="option-title">DOCX с деталями</span>
                 <span class="option-desc">Полная версия с услугами и запчастями</span>
             </button>
             
-            <button onclick="downloadContract('pdf', {{ contract.id }})" class="download-option">
+            <button onclick="downloadContract('pdf', '{{ contract.id }}')" class="download-option">
                 <span class="option-icon">📊</span>
                 <span class="option-title">PDF для печати</span>
                 <span class="option-desc">Оптимизированная для печати версия</span>
