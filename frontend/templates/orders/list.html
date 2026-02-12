@@ -59,7 +59,7 @@
 
 <script>
 function downloadOrderReport(orderId) {
-    const url = `/api/v1/reports/order/${orderId}/download`;
+    const url = `/api/reports/order/${orderId}/download`;
     window.utils.downloadFile(url);
     window.utils.showNotification('Акт выполненных работ скачивается...', 'info');
 }

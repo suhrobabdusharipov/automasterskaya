@@ -66,6 +66,42 @@ def client_detail_page(request: Request, client_id: int, db: Session = Depends(g
         {"request": request, "client": client}
     )
 
+@router.get("/{client_id}/edit")
+def edit_client_page(request: Request, client_id: int, db: Session = Depends(get_db)):
+    client = get_client(db, client_id)
+    if not client:
+        raise HTTPException(status_code=404, detail="Клиент не найден")
+    return templates.TemplateResponse(
+        "clients/edit.html",
+        {"request": request, "client": client}
+    )
+@router.post("/{client_id}/edit")
+def edit_client_form(
+    request: Request,
+    client_id: int,
+    full_name: str = Form(...),
+    phone: str = Form(...),
+    email: str = Form(None),
+    address: str = Form(None),
+    db: Session = Depends(get_db)
+):
+    db_client = get_client(db, client_id)
+    if not db_client:
+        raise HTTPException(status_code=404, detail="Клиент не найден")
+    client_update = ClientUpdate(
+        full_name=full_name,
+        phone=phone,
+        email=email,
+        address=address
+    )
+    try:
+        update_client(db, db_client, client_update)
+        return RedirectResponse(f"/clients/{client_id}?success=updated", status_code=303)
+    except Exception as e:
+        db.rollback()
+        print(f"Ошибка при обновлении клиента: {e}")
+        return RedirectResponse(f"/clients/{client_id}/edit?error=server", status_code=303)
+
 @router.get("/api/")
 def read_clients_api(db: Session = Depends(get_db)):
     return get_clients(db)
@@ -86,7 +122,8 @@ def edit_client_api(client_id: int, client: ClientUpdate, db: Session = Depends(
     db_client = get_client(db, client_id)
     if not db_client:
         raise HTTPException(status_code=404, detail="Клиент не найден")
-    return update_client(db, db_client, client)
+    update_client(db, db_client, client)
+    return {"detail": "Клиент успешно обновлен"}
 
 @router.delete("/api/{client_id}")
 def remove_client_api(client_id: int, db: Session = Depends(get_db)):
@@ -94,4 +131,4 @@ def remove_client_api(client_id: int, db: Session = Depends(get_db)):
     if not db_client:
         raise HTTPException(status_code=404, detail="Клиент не найден")
     delete_client(db, db_client)
-    return {"detail": "Клиент удален"}
+    return {"detail": "Клиент успешно удален"}

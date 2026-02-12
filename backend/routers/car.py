@@ -84,6 +84,43 @@ def car_detail_page(request: Request, car_id: int, db: Session = Depends(get_db)
         {"request": request, "car": car}
     )
 
+@router.get("/{car_id}/edit")
+def edit_car_page(request: Request, car_id: int, db: Session = Depends(get_db)):
+    car = get_car(db, car_id)
+    if not car:
+        raise HTTPException(status_code=404, detail="Машина не найдена")
+    return templates.TemplateResponse(
+        "cars/edit.html",
+        {"request": request, "car": car}
+    )
+
+@router.post("/{car_id}/edit")
+def edit_car_form(
+    request: Request,
+    car_id: int,
+    brand: str = Form(...),
+    model: str = Form(...),
+    year: int = Form(...),
+    vin: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    db_car = get_car(db, car_id)
+    if not db_car:
+        raise HTTPException(status_code=404, detail="Машина не найдена")
+    car_update = CarUpdate(
+        brand=brand,
+        model = model,
+        year=year,
+        vin=vin
+    )
+    try:
+        update_car(db,db_car,car_update)
+        return RedirectResponse(f"/clients/{car_id}?success=updated", status_code=303)
+    except Exception as e:
+        db.rollback()
+        print(f"Ошибка при обновлении автомобиля: {e}")
+        return RedirectResponse(f"/clients/{car_id}/edit?error=server", status_code=303)
+
 @router.get("/api/")
 def read_cars_api(db: Session = Depends(get_db)):
     return get_cars(db)

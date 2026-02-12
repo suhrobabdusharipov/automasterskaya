@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Редактирование клиента</h1>
+        <div class="header-actions">
+            <a href="/clients" class="btn btn-secondary">Назад к списку</a>
+            <button type="button" onclick="deleteClient({{ client.id }})" class="btn btn-danger">
+                Удалить клиента
+            </button>
+        </div>
+    </div>
+
+    {% if request.query_params.get("success") %}
+    <div class="alert alert-success">
+        Клиент успешно обновлен!
+    </div>
+    {% endif %}
+
+    {% if request.query_params.get("error") %}
+    <div class="alert alert-danger">
+        Клиент с такой почтой или телефоном уже существует!
+    </div>
+    {% endif %}
+
+    <div class="form-container">
+        <form action="/clients/{{ client.id }}/edit" method="post">
+            <div class="form-group">
+                <label>ФИО *</label>
+                <input type="text" name="full_name" required class="form-control" value="{{ client.full_name }}">
+            </div>
+
+            <div class="form-group">
+                <label>Телефон *</label>
+                <input type="text" name="phone" required class="form-control" value="{{ client.phone }}">
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" class="form-control" value="{{ client.email or '' }}">
+            </div>
+
+            <div class="form-group">
+                <label>Адрес</label>
+                <input type="text" name="address" class="form-control" value="{{ client.address or '' }}">
+            </div>
+
+            <div class="form-info">
+                <h3>Статистика клиента</h3>
+                <div class="stats-mini-grid">
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Всего автомобилей:</span>
+                        <span class="stat-mini-value">{{ client.cars|length if client.cars else 0 }}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Всего договоров:</span>
+                        <span class="stat-mini-value">{{ client.contracts|length if client.contracts else 0 }}</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-label">Клиент с:</span>
+                        <span class="stat-mini-value">{{ client.created_at.strftime('%d.%m.%Y') if client.created_at else 'Не указано' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="/clients" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+
+    {% if client.cars %}
+    <div class="related-section">
+        <h2>Автомобили клиента</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Марка</th>
+                        <th>Модель</th>
+                        <th>Год</th>
+                        <th>VIN</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for car in client.cars %}
+                    <tr>
+                        <td>{{ car.id }}</td>
+                        <td>{{ car.brand }}</td>
+                        <td>{{ car.model }}</td>
+                        <td>{{ car.year }}</td>
+                        <td>{{ car.vin }}</td>
+                        <td>
+                            <a href="/cars/{{ car.id }}/edit" class="btn-small btn-primary">Редактировать</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function deleteClient(clientId) {
+    if (!confirm('Вы уверены, что хотите удалить клиента? Все связанные автомобили и договоры также будут удалены.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/clients/api/${clientId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            window.utils.showNotification('Клиент успешно удален', 'success');
+            setTimeout(() => {
+                window.location.href = '/clients';
+            }, 1500);
+        } else {
+            const error = await response.json();
+            window.utils.showNotification(error.detail || 'Ошибка при удалении клиента', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting client:', error);
+        window.utils.showNotification('Ошибка сервера', 'error');
+    }
+}
+</script>
+{% endblock %}

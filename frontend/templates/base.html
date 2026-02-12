@@ -54,7 +54,15 @@
 
     <main class="main">
         <div class="container">
-            {% block content %}{% endblock %}
+            {% block content %}
+            <div class="gallery-grid">
+                <img src='https://img.freepik.com/premium-photo/modern-automotive-repair-workshop-with-vehicles-lifts_1000172-1045.jpg?semt=ais_hybrid&w=740' alt="Автосервис с подъемниками" class="gallery-image">
+                <img src='https://avatars.mds.yandex.net/i?id=b6142813ca787874e5be4c20dda8297e944878cd-12598198-images-thumbs&n=13' alt="Механик за работой" class="gallery-image">
+                <img src='https://img.freepik.com/premium-photo/selective-focus-mechanic-s-toolbox-with-tools-drawer_232070-18128.jpg?semt=ais_hybrid&w=740&q=80' alt="Инструменты механика" class="gallery-image">
+                <img src='https://a.d-cd.net/d4AAAgD_8OA-960.jpg' alt="Инструменты механика" class="gallery-image">
+                <img src='https://png.pngtree.com/thumb_back/fw800/background/20221103/pngtree-truck-indoor-industry-auto-repair-shop-service-photo-image_1313286.jpg' alt="Инструменты механика" class="gallery-image">
+            </div>
+            {% endblock %}
         </div>
     </main>
 
@@ -94,13 +102,7 @@
     </footer>
     {% endif %}
 
-    <!-- 1. Сначала утилиты -->
-<script src="/static/js/utils.js"></script>
-<!-- 2. Потом основной скрипт -->
-<script src="/static/js/main.js"></script>
-<!-- 3. Потом специфичные скрипты -->
-<script src="/static/js/contracts.js"></script>
-<script src="/static/js/orders.js"></script>
+    <script src="/static/js/main.js"></script>
     <script>
         // Мобильное меню
         document.addEventListener('DOMContentLoaded', function() {

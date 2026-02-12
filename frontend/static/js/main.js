@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Инициализация обработчиков форм
     initForms();
+    
+    // Инициализация модальных окон
+    initModals();
 });
 
 // Инициализация динамических элементов
@@ -28,41 +31,39 @@ function initDynamicElements() {
         const menu = dropdown.querySelector('.dropdown-menu');
         
         if (toggle && menu) {
-            toggle.addEventListener('click', function(e) {
+            // Удаляем старые обработчики
+            const newToggle = toggle.cloneNode(true);
+            toggle.parentNode.replaceChild(newToggle, toggle);
+            
+            newToggle.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                
+                // Закрываем все другие меню
+                document.querySelectorAll('.dropdown-menu.show').forEach(m => {
+                    if (m !== menu) m.classList.remove('show');
+                });
+                
                 menu.classList.toggle('show');
             });
-            
-            // Закрытие при клике вне меню
-            document.addEventListener('click', function() {
+        }
+    });
+    
+    // Закрытие при клике вне меню
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
                 menu.classList.remove('show');
             });
         }
     });
     
-    // Инициализация модальных окон
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        const closeBtns = modal.querySelectorAll('.modal-close, .btn-close');
-        closeBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                modal.classList.remove('show');
-            });
-        });
-        
-        // Закрытие при клике на фон
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.classList.remove('show');
-            }
-        });
-    });
-    
     // Инициализация табов
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
             const tabId = this.dataset.tab;
             const tabContent = document.querySelector(`.tab-content[data-tab="${tabId}"]`);
             
@@ -79,6 +80,38 @@ function initDynamicElements() {
     });
 }
 
+// Инициализация модальных окон
+function initModals() {
+    const modals = document.querySelectorAll('.modal');
+    
+    modals.forEach(modal => {
+        // Кнопки закрытия
+        const closeBtns = modal.querySelectorAll('.modal-close, .btn-close, [data-dismiss="modal"]');
+        closeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            });
+        });
+        
+        // Закрытие при клике на фон
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        });
+        
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        });
+    });
+}
+
 // Инициализация горячих клавиш
 function initHotkeys() {
     document.addEventListener('keydown', function(event) {
@@ -89,10 +122,23 @@ function initHotkeys() {
             if (saveBtn) saveBtn.click();
         }
         
+        // Ctrl+F - поиск
+        if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+            event.preventDefault();
+            const searchInput = document.querySelector('input[type="search"], .search-input');
+            if (searchInput) searchInput.focus();
+        }
+        
         // Esc - закрыть модальные окна, меню
         if (event.key === 'Escape') {
-            document.querySelectorAll('.modal.show').forEach(modal => modal.classList.remove('show'));
-            document.querySelectorAll('.dropdown-menu.show').forEach(menu => menu.classList.remove('show'));
+            document.querySelectorAll('.modal[style*="display: block"]').forEach(modal => {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            });
+            
+            document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+                menu.classList.remove('show');
+            });
             
             // Закрытие меню быстрого скачивания договоров
             const quickMenu = document.getElementById('quickDownloadMenu');
@@ -104,7 +150,7 @@ function initHotkeys() {
         // F5 - обновить таблицу
         if (event.key === 'F5') {
             event.preventDefault();
-            const refreshBtn = document.querySelector('.btn-refresh');
+            const refreshBtn = document.querySelector('.btn-refresh, [data-action="refresh"]');
             if (refreshBtn) refreshBtn.click();
         }
     });
@@ -117,11 +163,19 @@ function initForms() {
         // Валидация на лету
         const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
         inputs.forEach(input => {
-            input.addEventListener('blur', function() {
+            // Удаляем старые обработчики
+            const newInput = input.cloneNode(true);
+            input.parentNode.replaceChild(newInput, input);
+            
+            newInput.addEventListener('blur', function() {
                 validateField(this);
             });
             
-            input.addEventListener('input', function() {
+            newInput.addEventListener('input', function() {
+                clearFieldError(this);
+            });
+            
+            newInput.addEventListener('change', function() {
                 clearFieldError(this);
             });
         });
@@ -132,6 +186,12 @@ function initForms() {
                 e.preventDefault();
                 if (window.utils) {
                     window.utils.showNotification('Пожалуйста, исправьте ошибки в форме', 'error');
+                }
+                
+                // Прокрутка к первому полю с ошибкой
+                const firstError = this.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
         });
@@ -148,13 +208,13 @@ function validateField(field) {
     }
     
     // Дополнительная валидация
-    if (field.type === 'email' && window.utils && !window.utils.isValidEmail(field.value)) {
+    if (field.type === 'email' && field.value && window.utils && !window.utils.isValidEmail(field.value)) {
         showFieldError(field, 'Введите корректный email адрес');
         return false;
     }
     
-    if (field.type === 'tel' && window.utils && !window.utils.isValidPhone(field.value)) {
-        showFieldError(field, 'Введите корректный номер телефона');
+    if (field.type === 'tel' && field.value && window.utils && !window.utils.isValidPhone(field.value)) {
+        showFieldError(field, 'Введите корректный номер телефона (11 цифр, начиная с 7,8 или 9)');
         return false;
     }
     
@@ -183,6 +243,7 @@ function clearFieldError(field) {
     const errorElement = field.nextElementSibling;
     if (errorElement && errorElement.classList.contains('error-message')) {
         errorElement.style.display = 'none';
+        errorElement.textContent = '';
     }
 }
 
@@ -209,6 +270,14 @@ function getValidationMessage(field) {
         return 'Неверный формат';
     }
     
+    if (field.validity.rangeUnderflow) {
+        return `Минимальное значение: ${field.min}`;
+    }
+    
+    if (field.validity.rangeOverflow) {
+        return `Максимальное значение: ${field.max}`;
+    }
+    
     return 'Неверное значение';
 }
 
@@ -228,6 +297,11 @@ function validateForm(form) {
 
 // Обновление данных на странице
 async function refreshData(url, containerId, templateFunction) {
+    if (!url || !containerId) {
+        console.error('URL and containerId are required');
+        return null;
+    }
+    
     try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Ошибка загрузки данных');
@@ -235,7 +309,7 @@ async function refreshData(url, containerId, templateFunction) {
         const data = await response.json();
         const container = document.getElementById(containerId);
         
-        if (container && templateFunction) {
+        if (container && templateFunction && typeof templateFunction === 'function') {
             container.innerHTML = templateFunction(data);
         }
         
@@ -249,12 +323,30 @@ async function refreshData(url, containerId, templateFunction) {
     }
 }
 
+// Показать/скрыть загрузчик
+function showLoader(containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.classList.add('loading');
+    }
+}
+
+function hideLoader(containerId) {
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.classList.remove('loading');
+    }
+}
+
 // Экспорт функций
 window.main = {
     initDynamicElements,
     initHotkeys,
     initForms,
+    initModals,
     validateField,
     validateForm,
-    refreshData
+    refreshData,
+    showLoader,
+    hideLoader
 };

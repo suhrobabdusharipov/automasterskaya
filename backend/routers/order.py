@@ -198,12 +198,3 @@ def remove_order_api(order_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Заказ не найден")
     delete_order(db, db_order)
     return {"detail": "Заказ удален"}
-
-@router.delete("/{order_id}")
-def remove_order_html(order_id: int, db: Session = Depends(get_db)):
-    db_order = get_order(db, order_id)
-    if not db_order:
-        raise HTTPException(status_code=404, detail="Заказ не найден")
-    
-    delete_order(db, db_order)
-    return RedirectResponse("/orders?success=deleted", status_code=303)
